@@ -1,0 +1,62 @@
+[
+  {
+    "id": "openai",
+    "name": "OpenAI 官方",
+    "kind": "custom",
+    "provider_id": "openai-custom",
+    "base_url": "https://api.openai.com/v1",
+    "default_model": "gpt-5.6",
+    "models": ["gpt-5.6", "gpt-5.4", "gpt-5.2", "gpt-5.6-sol", "gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.1", "gpt-4.1"],
+    "default_env_key": "OPENAI_API_KEY",
+    "query_params": null,
+    "notes": "OpenAI 官方 API，需要官方 API key。"
+  },
+  {
+    "id": "azure-openai",
+    "name": "Azure OpenAI",
+    "kind": "custom",
+    "provider_id": "azure-openai",
+    "base_url": null,
+    "default_model": "gpt-5.6",
+    "models": ["gpt-5.6", "gpt-5.4", "gpt-5.2", "gpt-4.1"],
+    "default_env_key": "AZURE_OPENAI_API_KEY",
+    "query_params": {"api-version": "2025-06-01-preview"},
+    "notes": "填入你的 Azure 部署端点（形如 https://<resource>.openai.azure.com/openai/v1）。api-version 可在高级选项中修改。"
+  },
+  {
+    "id": "ollama",
+    "name": "Ollama（本地）",
+    "kind": "oss",
+    "oss_id": "ollama",
+    "base_url": "http://localhost:11434/v1",
+    "default_model": "qwen3-coder:32b",
+    "models": ["qwen3-coder:32b", "qwen3-coder:14b", "llama3.3", "deepseek-r1"],
+    "default_env_key": null,
+    "query_params": null,
+    "notes": "本地 Ollama 服务。无需 API key；请先启动 ollama serve 并拉取模型。"
+  },
+  {
+    "id": "lmstudio",
+    "name": "LM Studio（本地）",
+    "kind": "oss",
+    "oss_id": "lmstudio",
+    "base_url": "http://localhost:1234/v1",
+    "default_model": "local-model",
+    "models": ["local-model"],
+    "default_env_key": null,
+    "query_params": null,
+    "notes": "本地 LM Studio 服务。无需 API key；请先在 LM Studio 中加载模型并启动本地服务器。"
+  },
+  {
+    "id": "generic-responses",
+    "name": "通用 Responses 中转站",
+    "kind": "custom",
+    "provider_id": "generic-responses",
+    "base_url": null,
+    "default_model": "gpt-5.6",
+    "models": ["gpt-5.6", "gpt-5.4", "gpt-4.1", "gpt-4o"],
+    "default_env_key": "RESPONSES_API_KEY",
+    "query_params": null,
+    "notes": "任意兼容 OpenAI Responses 协议的中转站地址（需支持 /v1/responses 与 /v1/models）。"
+  }
+]

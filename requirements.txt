@@ -1,0 +1,5 @@
+flask>=2.2,<3.1
+waitress>=2.1
+tomlkit>=0.12
+requests>=2.31
+pywebview>=5.0

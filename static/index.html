@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Codex API Manager</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header id="topbar">
+  <div class="brand">Codex API Manager</div>
+  <div class="status" id="status-bar">
+    <span id="status-config">…</span>
+  </div>
+</header>
+
+<nav id="tabs">
+  <button class="tab active" data-tab="quick">快速切换</button>
+  <button class="tab" data-tab="providers">Provider 管理</button>
+  <button class="tab" data-tab="test">连接测试</button>
+  <button class="tab" data-tab="env">环境变量</button>
+  <button class="tab" data-tab="backup">备份与恢复</button>
+  <button class="tab" data-tab="commands">命令中心 <span class="tag">1.1</span></button>
+</nav>
+
+<main>
+  <!-- ============ 快速切换 ============ -->
+  <section id="tab-quick" class="tab-view active">
+    <h2>一键切换供应商</h2>
+    <p class="hint">选择供应商模板 → 选模型 → 填 API key → 点击「应用」。切换前会自动备份，可随时回退。</p>
+    <div id="template-grid" class="grid"></div>
+
+    <div id="quick-form" class="panel hidden">
+      <h3 id="quick-form-title"></h3>
+      <div class="form-row">
+        <label>模型</label>
+        <input id="qf-model" list="qf-models" placeholder="模型 ID">
+        <datalist id="qf-models"></datalist>
+      </div>
+      <div class="form-row hidden" id="qf-provider-row">
+        <label>Provider 名称</label>
+        <input id="qf-provider" placeholder="my-provider">
+      </div>
+      <div class="form-row hidden" id="qf-url-row">
+        <label>Base URL</label>
+        <input id="qf-url" placeholder="https://api.example.com/v1">
+      </div>
+      <div class="form-row" id="qf-key-row">
+        <label>API Key</label>
+        <input id="qf-key" type="password" placeholder="sk-…" autocomplete="off">
+        <button type="button" class="ghost" id="qf-key-toggle">显示</button>
+      </div>
+      <div class="form-row hidden" id="qf-scope-row">
+        <label>Key 存储</label>
+        <select id="qf-scope">
+          <option value="user">用户环境变量（Codex Desktop 读取，推荐）</option>
+          <option value="file">.env 文件（仅供脚本使用，Desktop 不读）</option>
+        </select>
+      </div>
+      <p id="qf-notes" class="notes"></p>
+      <div class="actions">
+        <button id="qf-apply" class="primary">应用并切换</button>
+        <button id="qf-cancel" class="ghost">取消</button>
+      </div>
+      <div id="qf-result" class="result hidden"></div>
+    </div>
+  </section>
+
+  <!-- ============ Provider 管理 ============ -->
+  <section id="tab-providers" class="tab-view hidden">
+    <h2>Provider 管理</h2>
+    <p class="hint">管理 config.toml 中的 model_providers 与全局设置。内置 ID（openai/ollama/lmstudio/amazon-bedrock）不可覆盖。</p>
+    <div id="provider-list"></div>
+    <div id="provider-form" class="panel hidden">
+      <h3 id="pf-title">Provider</h3>
+      <div class="form-row">
+        <label>Provider ID</label>
+        <input id="pf-id" placeholder="my-provider" disabled>
+      </div>
+      <div class="form-row">
+        <label>显示名称</label>
+        <input id="pf-name" placeholder="My Provider">
+      </div>
+      <div class="form-row">
+        <label>Base URL</label>
+        <input id="pf-url" placeholder="https://api.example.com/v1">
+      </div>
+      <div class="form-row">
+        <label>env_key（API key 环境变量名）</label>
+        <input id="pf-envkey" placeholder="MY_API_KEY">
+      </div>
+      <details class="advanced">
+        <summary>高级选项</summary>
+        <div class="form-row">
+          <label>query_params（JSON）</label>
+          <input id="pf-qp" placeholder='{"api-version":"2025-06-01-preview"}'>
+        </div>
+        <div class="form-row">
+          <label>http_headers（JSON）</label>
+          <input id="pf-headers" placeholder='{"X-Test":"1"}'>
+        </div>
+        <div class="form-row">
+          <label>requires_openai_auth</label>
+          <select id="pf-auth">
+            <option value="false">false（推荐）</option>
+            <option value="true">true</option>
+          </select>
+        </div>
+      </details>
+      <div class="actions">
+        <button id="pf-save" class="primary">保存</button>
+        <button id="pf-cancel" class="ghost">取消</button>
+      </div>
+    </div>
+    <h3>全局设置</h3>
+    <div class="panel">
+      <div class="form-row">
+        <label>model</label>
+        <input id="g-model" placeholder="gpt-5.6">
+      </div>
+      <div class="form-row">
+        <label>model_provider（当前生效 provider）</label>
+        <input id="g-provider" placeholder="my-provider">
+      </div>
+      <div class="form-row">
+        <label>openai_base_url（内置 openai 地址覆盖）</label>
+        <input id="g-openai-url" placeholder="https://api.openai.com/v1">
+      </div>
+      <div class="form-row">
+        <label>oss_provider（本地模型 ollama / lmstudio）</label>
+        <select id="g-oss">
+          <option value="">（未设置）</option>
+          <option value="ollama">ollama</option>
+          <option value="lmstudio">lmstudio</option>
+        </select>
+      </div>
+      <div class="actions">
+        <button id="g-save" class="primary">保存全局设置</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 连接测试 ============ -->
+  <section id="tab-test" class="tab-view hidden">
+    <h2>连接测试</h2>
+    <div class="panel">
+      <div class="form-row">
+        <label>Base URL</label>
+        <input id="ct-url" placeholder="https://api.example.com/v1">
+      </div>
+      <div class="form-row">
+        <label>模型</label>
+        <input id="ct-model" placeholder="gpt-5.6">
+      </div>
+      <div class="form-row">
+        <label>API Key</label>
+        <input id="ct-key" type="password" placeholder="sk-…" autocomplete="off">
+        <button type="button" class="ghost" id="ct-key-toggle">显示</button>
+      </div>
+      <div class="actions">
+        <button id="ct-run" class="primary">运行测试</button>
+      </div>
+      <div id="ct-result" class="hidden"></div>
+    </div>
+  </section>
+
+  <!-- ============ 环境变量 ============ -->
+  <section id="tab-env" class="tab-view hidden">
+    <h2>环境变量</h2>
+    <div class="env-actions">
+      <button class="ghost" id="env-file-to-user">从 .env 导入到用户环境变量</button>
+      <button class="ghost" id="env-user-to-file">从用户环境变量导出到 .env</button>
+    </div>
+    <div class="two-col">
+      <div class="panel">
+        <h3>用户环境变量（Codex Desktop 读取）<span class="tag">写后需重启 Desktop</span></h3>
+        <div id="env-user-list"></div>
+        <div class="actions">
+          <button class="ghost" id="env-user-add">新增</button>
+          <button class="primary" id="env-user-save">保存用户变量</button>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>.env 文件 <span id="env-file-path"></span></h3>
+        <div id="env-file-list"></div>
+        <div class="actions">
+          <button class="ghost" id="env-file-add">新增</button>
+          <button class="primary" id="env-file-save">保存 .env</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 备份与恢复 ============ -->
+  <section id="tab-backup" class="tab-view hidden">
+    <h2>备份与恢复</h2>
+    <div class="panel">
+      <h3>操作</h3>
+      <div class="actions">
+        <button id="bk-create" class="primary">创建备份</button>
+        <button id="bk-reset" class="danger">恢复默认（移除本工具的覆盖）</button>
+      </div>
+      <p class="hint">「恢复默认」只移除本工具修改过的键，插件/MCP 等配置不受影响；会先自动备份。</p>
+    </div>
+    <div class="panel">
+      <h3>备份列表</h3>
+      <div id="bk-list"></div>
+    </div>
+    <div class="panel">
+      <h3>我的默认</h3>
+      <div class="form-row">
+        <label>名称</label>
+        <input id="bk-default-name" placeholder="我的默认">
+      </div>
+      <div class="actions">
+        <button id="bk-save-default" class="primary">把当前配置存为「我的默认」</button>
+      </div>
+      <div id="bk-defaults-list"></div>
+    </div>
+  </section>
+
+  <!-- ============ 命令中心（1.1） ============ -->
+  <section id="tab-commands" class="tab-view hidden">
+    <div class="placeholder">
+      <h2>命令中心</h2>
+      <p>codex doctor / exec / login 的图形化执行将在 1.1 版本提供。</p>
+    </div>
+  </section>
+</main>
+
+<div id="modal" class="modal hidden">
+  <div class="modal-box">
+    <h3 id="modal-title"></h3>
+    <div id="modal-body"></div>
+    <div class="actions">
+      <button id="modal-ok" class="primary">确定</button>
+      <button id="modal-cancel" class="ghost">取消</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+<script src="app.js"></script>
+</body>
+</html>
