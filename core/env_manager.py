@@ -37,6 +37,14 @@ def mask_secret(value: str, keep_tail: int = 4) -> str:
     return value[:2] + "****" + value[-keep_tail:]
 
 
+def _quote_env_value(value: str) -> str:
+    """.env 值含特殊字符时用双引号包裹，避免破坏解析。"""
+    if value and not any(c in value for c in " \t\"'#$`\\"):
+        return value
+    escaped = value.replace("\\", "\\\\").replace('"', '\\"')
+    return f'"{escaped}"'
+
+
 class EnvManager:
     def __init__(self, env_file: str | Path | None = None):
         self.env_file = Path(env_file) if env_file else DEFAULT_ENV_FILE
@@ -78,7 +86,12 @@ class EnvManager:
                         except FileNotFoundError:
                             pass
                     else:
-                        winreg.SetValueEx(key, name, 0, winreg.REG_SZ, str(value))
+                        value = str(value)
+                        if len(value) > _MAX_VALUE_LEN:
+                            raise EnvError(
+                                f"环境变量 `{name}` 值过长（{len(value)} > {_MAX_VALUE_LEN} 字符），未写入。"
+                            )
+                        winreg.SetValueEx(key, name, 0, winreg.REG_SZ, value)
             self._broadcast()
             return {"ok": True, "restart_required": True}
 
@@ -121,7 +134,7 @@ class EnvManager:
                     current[name] = str(value)
             lines = []
             for name, value in current.items():
-                lines.append(f"{name}={value}")
+                lines.append(f"{name}={_quote_env_value(value)}")
             self.env_file.parent.mkdir(parents=True, exist_ok=True)
             self.env_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
             return {"ok": True, "path": str(self.env_file)}

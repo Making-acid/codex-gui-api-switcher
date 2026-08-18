@@ -96,8 +96,13 @@ class ConfigManager:
     def read_document(self) -> tomlkit.TOMLDocument:
         if not self.exists():
             return tomlkit.parse("")
-        with self.config_path.open("r", encoding="utf-8") as fh:
-            return tomlkit.parse(fh.read())
+        text = self.config_path.read_text(encoding="utf-8")
+        try:
+            return tomlkit.parse(text)
+        except Exception as exc:  # tomlkit.TOMLKitError
+            raise ConfigError(
+                f"config.toml 解析失败（文件可能被其他程序修改）：{exc}"
+            ) from exc
 
     def read_raw(self) -> str:
         if not self.exists():
@@ -221,7 +226,7 @@ class ConfigManager:
                     if leaf in parent:
                         del parent[leaf]
                 else:
-                    parent[leaf] = _json_compat(entry["before"])
+                    parent[leaf] = _to_toml(entry["before"])
                 changes.append({"key": key, "before": before, "after": entry["before"]})
                 remaining = [o for o in remaining if o["key"] != key]
 
@@ -235,9 +240,12 @@ class ConfigManager:
     # ------------------------------------------------------------------
 
     def _apply_providers(self, doc, providers: dict, overrides_before, changes) -> None:
-        if not isinstance(doc.get("model_providers"), dict):
+        existing = doc.get("model_providers")
+        if not isinstance(existing, dict):
             if providers:
                 doc["model_providers"] = tomlkit.table()
+            else:
+                return
 
         table = doc["model_providers"]
         for pid, spec in providers.items():
@@ -268,7 +276,7 @@ class ConfigManager:
                     if field in sub:
                         del sub[field]
                 else:
-                    sub[field] = _json_compat(value)
+                    sub[field] = _to_toml(value)
             if before is None or _json_compat(before) != _json_compat(spec):
                 self._record_override(overrides_before, f"model_providers.{pid}", before, "write")
                 changes.append({"key": f"model_providers.{pid}", "before": before, "after": spec})
@@ -307,12 +315,15 @@ class ConfigManager:
         )
 
     def _atomic_write(self, text: str) -> None:
+        """原子写：先写临时文件再 os.replace，崩溃不损坏原文件。"""
         backup_path = self.config_path.with_suffix(".toml.bak")
         try:
             shutil.copy2(self.config_path, backup_path)
         except OSError:
             pass
-        self.config_path.write_text(text, encoding="utf-8")
+        tmp = self.config_path.with_suffix(".toml.tmp")
+        tmp.write_text(text, encoding="utf-8")
+        os.replace(tmp, self.config_path)
 
 
 # ---------------------------------------------------------------------------
@@ -345,6 +356,22 @@ def _resolve_path(doc, path: str):
     if not isinstance(node, dict) or parts[-1] not in node:
         return None
     return (node, parts[-1])
+
+
+def _to_toml(value):
+    """把纯 Python 结构转成 tomlkit 结构（dict → table，list → array），
+    避免嵌套写入时退化为 inline table 破坏格式。"""
+    if isinstance(value, dict):
+        table = tomlkit.table()
+        for k, v in value.items():
+            table[str(k)] = _to_toml(v)
+        return table
+    if isinstance(value, (list, tuple)):
+        arr = tomlkit.array()
+        for v in value:
+            arr.append(_to_toml(v))
+        return arr
+    return value
 
 
 def _json_compat(value):

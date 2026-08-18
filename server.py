@@ -1,10 +1,16 @@
-"""Flask 应用：一期全部 REST API + 前端静态服务。"""
+"""Flask 应用：一期全部 REST API + 前端静态服务。
+
+安全：服务仅绑定 127.0.0.1；提供 auth_token 时，/api/* 请求必须携带
+X-Auth-Token（或 ?token=）且 Origin 必须为本地；测试接口仅允许 http/https。
+"""
 from __future__ import annotations
 
 import json
+import secrets
 import threading
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import urlparse
 
 from flask import Flask, jsonify, request, send_from_directory
 
@@ -17,13 +23,18 @@ from core.providers import TemplateError, build_apply_config, load_templates
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 DEFAULTS_FILE = "my-defaults.json"
 
+# 保留（read_api_config 返回 raw 中含 experimental_bearer_token 明文，
+# 不再对外返回 raw 字段）
+SENSITIVE_RAW_FIELD = "raw"
+
 
 def utcnow_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def create_app(config_manager: ConfigManager | None = None,
-               env_manager: EnvManager | None = None) -> Flask:
+               env_manager: EnvManager | None = None,
+               auth_token: str | None = None) -> Flask:
     app = Flask(__name__, static_folder=None)
     app.config["JSON_AS_ASCII"] = False
 
@@ -31,6 +42,27 @@ def create_app(config_manager: ConfigManager | None = None,
     env = env_manager or EnvManager()
     backups = BackupManager(mgr)
     state_lock = threading.RLock()
+
+    # ------------------------------------------------------------------
+    # 鉴权：token 校验 + Origin 校验（仅 /api/*）
+    # ------------------------------------------------------------------
+
+    @app.before_request
+    def guard():
+        if not request.path.startswith("/api/"):
+            return None
+        origin = request.headers.get("Origin")
+        if origin:
+            host = urlparse(origin).hostname
+            if host != "127.0.0.1":
+                return jsonify({"ok": False, "message": "跨源请求被拒绝"}), 403
+        if auth_token:
+            header_token = request.headers.get("X-Auth-Token", "")
+            query_token = request.args.get("token", "")
+            if not secrets.compare_digest(header_token, auth_token) and \
+               not secrets.compare_digest(query_token, auth_token):
+                return jsonify({"ok": False, "message": "未授权"}), 403
+        return None
 
     # ------------------------------------------------------------------
     # 通用
@@ -82,6 +114,8 @@ def create_app(config_manager: ConfigManager | None = None,
     @app.get("/api/config")
     def get_config():
         cfg = mgr.read_api_config()
+        # raw 全文含 experimental_bearer_token 等明文，不外发
+        cfg.pop(SENSITIVE_RAW_FIELD, None)
         overrides = mgr.get_overrides()
         return jsonify({"ok": True, "config": cfg, "overrides": overrides})
 
@@ -128,16 +162,24 @@ def create_app(config_manager: ConfigManager | None = None,
         api_key = body.get("api_key")
 
         with state_lock:
-            if api_key and env_key:
-                if env_scope == "file":
-                    env.write_env_file([{"name": env_key, "value": api_key}])
-                else:
-                    env.write_user_env([{"name": env_key, "value": api_key}])
             _auto_backup(f"应用模板 {template_id}")
             try:
                 result = mgr.write(api_config)
             except ConfigError as exc:
                 return _err(str(exc), 400)
+            # 顺序：config 成功后才写 env；env 失败则回滚 config，避免残留
+            if api_key and env_key:
+                try:
+                    if env_scope == "file":
+                        env.write_env_file([{"name": env_key, "value": api_key}])
+                    else:
+                        env.write_user_env([{"name": env_key, "value": api_key}])
+                except Exception as exc:
+                    try:
+                        mgr.restore_overrides()
+                    except ConfigError:
+                        pass
+                    return _err(f"写入环境变量失败，已回滚本次配置更改: {exc}", 500)
 
         return jsonify({
             "ok": True,
@@ -161,6 +203,8 @@ def create_app(config_manager: ConfigManager | None = None,
         model = body.get("model")
         if not base_url or not model:
             return _err("需要 base_url 与 model")
+        if urlparse(base_url).scheme not in ("http", "https"):
+            return _err("仅支持 http/https 地址")
         result = test_connection(
             base_url,
             body.get("api_key"),
@@ -283,17 +327,18 @@ def create_app(config_manager: ConfigManager | None = None,
 
     @app.post("/api/defaults/save-as-mine")
     def save_as_mine():
+        """保存"我的默认"：一律剥离密钥类字段（env_key/bearer/静态 headers），
+        与"密钥不落盘"的设计一致。"""
         body = request.get_json(silent=True) or {}
         name = body.get("name") or "我的默认"
-        include_keys = bool(body.get("include_keys", True))
         cfg = mgr.read_api_config()
         for key in ("raw", "path", "exists"):
             cfg.pop(key, None)
-        if not include_keys:
-            for pid, spec in cfg.get("model_providers", {}).items():
-                spec.pop("env_key", None)
-                spec.pop("experimental_bearer_token", None)
-                spec.pop("env_key_instructions", None)
+        # 顶层无密钥字段；逐个 provider 剥离敏感字段
+        for spec in cfg.get("model_providers", {}).values():
+            for sensitive in ("env_key", "env_key_instructions",
+                              "experimental_bearer_token", "http_headers"):
+                spec.pop(sensitive, None)
         entry = {
             "id": datetime.now().strftime("%Y%m%d-%H%M%S"),
             "name": name,

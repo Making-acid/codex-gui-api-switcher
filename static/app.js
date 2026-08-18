@@ -2,11 +2,14 @@
 
 /* ---------------- 基础 ---------------- */
 
+const AUTH_TOKEN = new URLSearchParams(location.search).get("token") || "";
+
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 
 async function api(path, options = {}) {
   const opts = { method: options.method || "GET", headers: {} };
+  if (AUTH_TOKEN) opts.headers["X-Auth-Token"] = AUTH_TOKEN;
   if (options.body !== undefined) {
     opts.headers["Content-Type"] = "application/json";
     opts.body = JSON.stringify(options.body);
@@ -385,8 +388,8 @@ function renderTestResult(res) {
 let envDraft = { user: [], file: [] };
 
 function renderEnv() {
-  envDraft.user = (STATE.env.user || []).map((e) => ({ name: e.name, value: e.masked, masked: true, real: null }));
-  envDraft.file = STATE.env.file.map((e) => ({ name: e.name, value: e.masked, masked: true, real: e.value }));
+  envDraft.user = (STATE.env.user || []).map((e) => ({ name: e.name, _origName: e.name, value: e.masked, masked: true, real: null, dirty: false, deleted: false }));
+  envDraft.file = STATE.env.file.map((e) => ({ name: e.name, _origName: e.name, value: e.masked, masked: true, real: e.value, dirty: false, deleted: false }));
   renderEnvRows("user");
   renderEnvRows("file");
   $("#env-file-path").textContent = `(${esc(STATE.env.env_file)})`;
@@ -402,46 +405,76 @@ function renderEnvRows(scope) {
 
 function envRowEl(scope, idx) {
   const row = envDraft[scope][idx];
+  if (row.deleted) return document.createDocumentFragment();
   const el = document.createElement("div");
   el.className = "env-row";
   el.innerHTML = `
     <input class="env-name" value="${esc(row.name)}" placeholder="变量名">
-    <input class="env-val" type="password" value="${esc(row.value)}" placeholder="值">
-    <button class="ghost env-toggle">${row.masked ? "显示" : "隐藏"}</button>
+    <input class="env-val" type="password" value="${esc(row.masked ? row.value : (row.real ?? ""))}" placeholder="值">
+    <button class="ghost env-toggle">显示</button>
     <button class="ghost env-del">删除</button>`;
   const nameIn = el.querySelector(".env-name");
   const valIn = el.querySelector(".env-val");
-  const real = row.masked ? row.real : row.value;
 
   el.querySelector(".env-toggle").addEventListener("click", () => {
     const showing = valIn.type === "text";
     valIn.type = showing ? "password" : "text";
-    if (!showing) valIn.value = real !== null && real !== undefined ? real : valIn.value;
+    if (!showing && row.masked && !row.dirty) {
+      // 后端不返回明文；未修改的隐藏值保持脱敏显示
+      valIn.value = row.value;
+    }
     el.querySelector(".env-toggle").textContent = showing ? "显示" : "隐藏";
   });
   el.querySelector(".env-del").addEventListener("click", () => {
-    envDraft[scope].splice(idx, 1);
+    if (row.isNew) {
+      envDraft[scope].splice(idx, 1);
+    } else {
+      row.deleted = true;   // 删除既有行：保存时发送 value=null
+    }
     renderEnvRows(scope);
   });
-  nameIn.addEventListener("input", () => { row.name = nameIn.value; });
-  valIn.addEventListener("input", () => { row.real = valIn.value; row.masked = false; });
+  nameIn.addEventListener("input", () => {
+    row.name = nameIn.value;
+    if (!row.isNew && nameIn.value !== row._origName) row.dirty = true;
+  });
+  valIn.addEventListener("input", () => {
+    row.real = valIn.value;
+    row.masked = false;
+    row.dirty = true;
+  });
   return el;
 }
 
+function envDirtyEntries(scope) {
+  // 只发送修改过的行：改值 → {name, value}；删除 → {name, value: null}；未动 → 不发送
+  const out = [];
+  envDraft[scope].forEach((r) => {
+    const name = r.name.trim();
+    if (!name) return;
+    if (r.deleted) {
+      out.push({ name, value: null });
+      return;
+    }
+    if (r.dirty) {
+      out.push({ name, value: r.masked ? null : (r.real !== null ? r.real : "") });
+    }
+  });
+  return out;
+}
+
 $("#env-user-add").addEventListener("click", () => {
-  envDraft.user.push({ name: "", value: "", masked: false, real: null });
+  envDraft.user.push({ name: "", value: "", masked: false, real: null, dirty: true, isNew: true });
   renderEnvRows("user");
 });
 $("#env-file-add").addEventListener("click", () => {
-  envDraft.file.push({ name: "", value: "", masked: false, real: null });
+  envDraft.file.push({ name: "", value: "", masked: false, real: null, dirty: true, isNew: true });
   renderEnvRows("file");
 });
 
 $("#env-user-save").addEventListener("click", async () => {
   try {
-    const entries = envDraft.user
-      .filter((r) => r.name.trim())
-      .map((r) => ({ name: r.name.trim(), value: r.masked ? null : (r.real !== null ? r.real : "") }));
+    const entries = envDirtyEntries("user");
+    if (!entries.length) { toast("没有需要保存的修改", "ok"); return; }
     await api("/api/env?scope=user", { method: "PUT", body: { entries } });
     toast("用户环境变量已保存。请重启 Codex Desktop 后生效。", "ok");
     await refreshAll();
@@ -450,9 +483,8 @@ $("#env-user-save").addEventListener("click", async () => {
 
 $("#env-file-save").addEventListener("click", async () => {
   try {
-    const entries = envDraft.file
-      .filter((r) => r.name.trim())
-      .map((r) => ({ name: r.name.trim(), value: r.masked ? (r.real !== null ? r.real : "") : "" }));
+    const entries = envDirtyEntries("file");
+    if (!entries.length) { toast("没有需要保存的修改", "ok"); return; }
     await api("/api/env?scope=file", { method: "PUT", body: { entries } });
     toast(".env 已保存", "ok");
     await refreshAll();

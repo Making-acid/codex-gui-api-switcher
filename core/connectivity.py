@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import time
-from urllib.parse import urljoin
 
 import requests
 
@@ -11,18 +10,19 @@ class ConnectivityError(Exception):
     pass
 
 
-def _normalize_base(base_url: str) -> str:
+def _endpoint(base_url: str, name: str) -> str:
+    """拼接端点：base_url 若已以 /<name> 结尾则直接使用，否则追加。"""
     base = base_url.rstrip("/")
-    if not base.endswith("/v1") and not base.endswith("/responses"):
+    if base.endswith(f"/{name}"):
         return base
-    return base
+    return f"{base}/{name}"
 
 
 def smoke_test(base_url: str, api_key: str | None, model: str,
                headers: dict | None = None, query_params: dict | None = None,
                timeout: int = 20) -> dict:
     """硬条件：最小 POST {base_url}/responses 请求。"""
-    url = urljoin(base_url.rstrip("/") + "/", "responses")
+    url = _endpoint(base_url, "responses")
     payload = {"model": model, "input": "ping", "max_output_tokens": 1, "stream": False}
     req_headers = {"Content-Type": "application/json"}
     if api_key:
@@ -56,7 +56,7 @@ def probe_models(base_url: str, api_key: str | None,
                  headers: dict | None = None, query_params: dict | None = None,
                  timeout: int = 15) -> dict:
     """软探测：GET {base_url}/models。失败不影响判定，仅作参考。"""
-    url = urljoin(base_url.rstrip("/") + "/", "models")
+    url = _endpoint(base_url, "models")
     req_headers = {}
     if api_key:
         req_headers["Authorization"] = f"Bearer {api_key}"

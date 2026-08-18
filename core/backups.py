@@ -22,7 +22,7 @@ def utcnow_iso() -> str:
 
 
 def now_ts() -> str:
-    return datetime.now().strftime("%Y%m%d-%H%M%S")
+    return datetime.now().strftime("%Y%m%d-%H%M%S-%f")
 
 
 class BackupManager:
