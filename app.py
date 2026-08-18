@@ -3,14 +3,15 @@
 用法：
   python app.py            # 桌面窗口
   python app.py --browser  # 用默认浏览器打开
+  python app.py --no-window --port 18080   # 只启动服务
 """
 from __future__ import annotations
 
 import argparse
 import socket
 import threading
+import time
 import webbrowser
-from pathlib import Path
 
 from waitress import serve
 
@@ -21,6 +22,19 @@ def find_free_port() -> int:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind(("127.0.0.1", 0))
         return s.getsockname()[1]
+
+
+def wait_ready(url: str, timeout: float = 15.0) -> bool:
+    """等待本地服务就绪（避免 webview 打开白屏）。"""
+    port = int(url.rsplit(":", 1)[1].rstrip("/"))
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        try:
+            with socket.create_connection(("127.0.0.1", port), timeout=1):
+                return True
+        except OSError:
+            time.sleep(0.1)
+    return False
 
 
 def main() -> None:
@@ -39,8 +53,8 @@ def main() -> None:
         daemon=True,
     )
     thread.start()
+    wait_ready(url)
     print(f"Codex API Manager 已启动: {url}")
-
     if args.no_window or args.browser:
         webbrowser.open(url)
         try:
@@ -55,9 +69,10 @@ def main() -> None:
     webview.create_window(
         "Codex API Manager",
         url,
-        width=1100,
-        height=760,
-        min_size=(820, 600),
+        width=1120,
+        height=780,
+        min_size=(860, 620),
+        background_color="#0f1115",
     )
     webview.start()
 
