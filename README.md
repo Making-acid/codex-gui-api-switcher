@@ -20,6 +20,14 @@ python app.py            # 桌面窗口（Edge WebView2）
 python app.py --browser  # 用浏览器打开
 ```
 
+## 打包为桌面软件（exe）
+
+```bash
+pip install pyinstaller
+python -m PyInstaller --clean --noconfirm CodexAPIManager.spec
+# 产物：dist\CodexAPIManager.exe（单文件，双击即用，无需 Python 环境）
+```
+
 ## 使用提示
 
 - 写入用户环境变量后需**重启 Codex Desktop** 才会生效（GUI 进程只继承启动时的环境变量）
