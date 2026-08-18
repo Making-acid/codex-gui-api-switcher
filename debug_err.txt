@@ -1,2 +1,0 @@
-requests\__init__.py:86: RequestsDependencyWarning: Unable to find acceptable character detection dependency (chardet or charset_normalizer).
-WARNING:waitress.queue:Task queue depth is 1
