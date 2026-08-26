@@ -24,6 +24,66 @@
     "notes": "填入你的 Azure 部署端点（形如 https://<resource>.openai.azure.com/openai/v1）。api-version 可在高级选项中修改。"
   },
   {
+    "id": "openrouter",
+    "name": "OpenRouter（聚合）",
+    "kind": "custom",
+    "provider_id": "openrouter",
+    "base_url": "https://openrouter.ai/api/v1",
+    "default_model": "openai/gpt-5.6",
+    "models": ["openai/gpt-5.6", "openai/gpt-5.6-sol", "anthropic/claude-opus-4.6", "google/gemini-3.1-pro", "qwen/qwen3-max", "deepseek/deepseek-v3.2", "openai/o4-mini"],
+    "default_env_key": "OPENROUTER_API_KEY",
+    "query_params": null,
+    "notes": "聚合平台（key 以 sk-or- 开头），模型 ID 用 provider/model 格式（如 openai/gpt-5.6）。官方支持 Responses API。"
+  },
+  {
+    "id": "groq",
+    "name": "Groq（超快推理）",
+    "kind": "custom",
+    "provider_id": "groq",
+    "base_url": "https://api.groq.com/openai/v1",
+    "default_model": "gpt-oss-120b",
+    "models": ["gpt-oss-120b", "gpt-oss-20b", "meta-llama/llama-4-maverick", "meta-llama/llama-4-scout", "qwen/qwen3-32b", "gemma2-9b-it"],
+    "default_env_key": "GROQ_API_KEY",
+    "query_params": null,
+    "notes": "超快推理服务（key 以 gsk_ 开头），主打开源模型（Llama、Qwen、gpt-oss）。官方支持 Responses API。"
+  },
+  {
+    "id": "xai",
+    "name": "xAI Grok",
+    "kind": "custom",
+    "provider_id": "xai",
+    "base_url": "https://api.x.ai/v1",
+    "default_model": "grok-4.5",
+    "models": ["grok-4.5", "grok-4.3", "grok-4.1-fast", "grok-4", "grok-code-fast-1"],
+    "default_env_key": "XAI_API_KEY",
+    "query_params": null,
+    "notes": "Grok 系列模型（key 以 xai- 开头）。官方使用 Responses API 路径。"
+  },
+  {
+    "id": "perplexity",
+    "name": "Perplexity",
+    "kind": "custom",
+    "provider_id": "perplexity",
+    "base_url": "https://api.perplexity.ai/v1",
+    "default_model": "sonar-pro",
+    "models": ["sonar-pro", "sonar-reasoning-pro", "sonar"],
+    "default_env_key": "PERPLEXITY_API_KEY",
+    "query_params": null,
+    "notes": "Agent API 完全兼容 OpenAI Responses 协议（/v1/responses 是官方别名端点）。"
+  },
+  {
+    "id": "huggingface",
+    "name": "Hugging Face Inference",
+    "kind": "custom",
+    "provider_id": "huggingface",
+    "base_url": "https://router.huggingface.co/v1",
+    "default_model": "openai/gpt-oss-120b",
+    "models": ["openai/gpt-oss-120b", "moonshotai/kimi-k2-instruct", "deepseek-ai/DeepSeek-R1", "qwen/qwen3-32b"],
+    "default_env_key": "HF_TOKEN",
+    "query_params": null,
+    "notes": "HF Inference Providers 路由。模型 ID 可加 :groq 等后缀指定后端（如 openai/gpt-oss-120b:groq）。官方支持 Responses API。"
+  },
+  {
     "id": "ollama",
     "name": "Ollama（本地）",
     "kind": "oss",
