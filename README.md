@@ -2,7 +2,7 @@
 
 图形化修改 Codex API 配置的工具（Windows）。项目概述与完整设计见 [DESIGN.md](DESIGN.md)，最终用户操作说明见 [用户手册.md](用户手册.md)。
 
-内置 10 个供应商模板（全部原生支持 Responses 协议，填 API key 即用）：OpenAI 官方、Azure OpenAI、OpenRouter（聚合）、Groq、xAI Grok、Perplexity、Hugging Face Inference、Ollama（本地）、LM Studio（本地）、通用 Responses 中转站。
+内置 13 个供应商模板（全部原生支持 Responses 协议，填 API key 即用）：OpenAI 官方、Azure OpenAI、OpenRouter（聚合）、Groq、xAI Grok、Perplexity、Hugging Face Inference、Fireworks AI、腾讯云 TokenHub（GLM/Kimi/DeepSeek/MiniMax 服务端自动转换）、NovAI（国产模型网关）、Ollama（本地）、LM Studio（本地）、通用 Responses 中转站。
 
 ## 环境要求
 

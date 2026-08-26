@@ -84,6 +84,42 @@
     "notes": "HF Inference Providers 路由。模型 ID 可加 :groq 等后缀指定后端（如 openai/gpt-oss-120b:groq）。官方支持 Responses API。"
   },
   {
+    "id": "fireworks",
+    "name": "Fireworks AI",
+    "kind": "custom",
+    "provider_id": "fireworks",
+    "base_url": "https://api.fireworks.ai/inference/v1",
+    "default_model": "accounts/fireworks/models/qwen3-235b-a22b",
+    "models": ["accounts/fireworks/models/qwen3-235b-a22b", "accounts/fireworks/models/llama4-maverick", "accounts/fireworks/models/qwen3-32b"],
+    "default_env_key": "FIREWORKS_API_KEY",
+    "query_params": null,
+    "notes": "开源模型推理平台。官方完整支持 Responses API（含 MCP 工具、previous_response_id、流式）。模型 ID 形如 accounts/fireworks/models/<模型>。"
+  },
+  {
+    "id": "tokenhub",
+    "name": "腾讯云 TokenHub（国产模型）",
+    "kind": "custom",
+    "provider_id": "tokenhub",
+    "base_url": "https://tokenhub.tencentmaas.com/v1",
+    "default_model": "glm-5.2",
+    "models": ["glm-5.2", "glm-5.1", "kimi-k2.7-code", "kimi-k2.6", "kimi-k3", "deepseek-v4-pro", "deepseek-v4-flash", "deepseek-v3.2", "hy3", "minimax-m3"],
+    "default_env_key": "TOKENHUB_API_KEY",
+    "query_params": null,
+    "notes": "腾讯云官方大模型服务平台，统一提供 /v1/responses 接口，GLM/Kimi/DeepSeek/MiniMax 等国产模型由服务端自动协议转换（原厂直连不可用）。新加坡节点: https://tokenhub-intl.tencentmaas.com/v1"
+  },
+  {
+    "id": "novai",
+    "name": "NovAI（国产模型网关）",
+    "kind": "custom",
+    "provider_id": "novai",
+    "base_url": "https://aiapi-pro.com/v1",
+    "default_model": "deepseek-v3.2",
+    "models": ["deepseek-v3.2", "glm-5", "qwen-max", "qwen-plus", "minimax-text-01", "glm-4.6v"],
+    "default_env_key": "NOVAI_API_KEY",
+    "query_params": null,
+    "notes": "第三方聚合网关，为 GLM/DeepSeek/Qwen/MiniMax 等中文模型提供 /v1/responses 端点（自动转换）。第三方平台，请自行评估可靠性。"
+  },
+  {
     "id": "ollama",
     "name": "Ollama（本地）",
     "kind": "oss",
