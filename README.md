@@ -2,7 +2,13 @@
 
 图形化修改 Codex API 配置的工具（Windows）。项目概述与完整设计见 [DESIGN.md](DESIGN.md)，最终用户操作说明见 [用户手册.md](用户手册.md)。
 
-内置 13 个供应商模板（全部原生支持 Responses 协议，填 API key 即用）：OpenAI 官方、Azure OpenAI、OpenRouter（聚合）、Groq、xAI Grok、Perplexity、Hugging Face Inference、Fireworks AI、腾讯云 TokenHub（GLM/Kimi/DeepSeek/MiniMax 服务端自动转换）、NovAI（国产模型网关）、Ollama（本地）、LM Studio（本地）、通用 Responses 中转站。
+内置 17 个供应商模板（全部原生支持 Responses 协议，填 API key 即用）：
+
+- **国际**：OpenAI 官方、Azure OpenAI、AWS Bedrock（Codex 内置 provider）、OpenRouter（聚合）、Groq、xAI Grok、Perplexity、Hugging Face Inference、Fireworks AI
+- **国内直连**：阿里云百炼（通义 qwen3-coder-plus / DeepSeek-V4 / GLM-5.2，模型级清单）、火山方舟（豆包 doubao-seed-2.0）、智谱 GLM（Coding Plan /api/v1）、腾讯云 TokenHub（GLM/Kimi/DeepSeek/MiniMax 服务端自动转换）
+- **网关/本地**：NovAI（国产模型网关）、Ollama、LM Studio、通用 Responses 中转站
+
+已查证不支持 Responses（仅 Chat Completions，未收录）：Google Gemini OpenAI 兼容层、GitHub Models、Together、Mistral、Cerebras、DeepInfra、Novita、硅基流动，以及 DeepSeek/Kimi/MiniMax/百度千帆官方直连端点。
 
 ## 环境要求
 

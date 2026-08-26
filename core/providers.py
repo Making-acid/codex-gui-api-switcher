@@ -11,6 +11,9 @@ TEMPLATES_FILE = Path(__file__).resolve().parent.parent / "templates" / "provide
 # 本地 OSS 服务不写 model_provider（Codex 通过 oss_provider 选择）
 KIND_OSS = "oss"
 KIND_CUSTOM = "custom"
+# Codex 内置 provider（如 amazon-bedrock）：只写 model_provider + model，
+# 不定义 model_providers 子表（内置定义已存在于 Codex 二进制中）
+KIND_BUILTIN = "builtin"
 
 
 class TemplateError(Exception):
@@ -60,6 +63,13 @@ def build_apply_config(template_id: str, model: str | None = None,
             config["model"] = model
         return {"config": config, "env_key": env_key}
 
+    if kind == KIND_BUILTIN:
+        pid = t.get("provider_id") or template_id
+        config = {"model_provider": pid}
+        if model:
+            config["model"] = model
+        return {"config": config, "env_key": env_key}
+
     if kind == KIND_CUSTOM:
         pid = provider_id or t.get("provider_id") or template_id
         pid = _safe_provider_id(pid)
@@ -87,4 +97,4 @@ def build_apply_config(template_id: str, model: str | None = None,
             config["model"] = model
         return {"config": config, "env_key": env_key}
 
-    raise TemplateError(f"模板 kind 不支持: {kind}")
+    raise TemplateError(f"模板 kind 不支持: {kind}（支持 custom/oss/builtin）")

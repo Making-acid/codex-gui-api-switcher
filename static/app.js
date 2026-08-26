@@ -120,8 +120,9 @@ function renderTemplateGrid() {
 function isTemplateActive(t) {
   const c = STATE.config;
   if (t.kind === "oss") return c.oss_provider === (t.oss_id || t.id);
-  if (t.kind === "custom") {
+  if (t.kind === "builtin" || t.kind === "custom") {
     const pid = t.provider_id || t.id;
+    if (t.kind === "builtin") return c.model_provider === pid;
     return c.model_provider === pid && c.model_providers && !!c.model_providers[pid];
   }
   return false;
@@ -145,7 +146,7 @@ function selectTemplate(t) {
   $("#qf-provider-row").classList.toggle("hidden", !(t.kind === "custom" && !t.provider_id));
   $("#qf-provider").value = t.provider_id || "my-provider";
 
-  $("#qf-url-row").classList.toggle("hidden", !!t.base_url || t.kind === "oss");
+  $("#qf-url-row").classList.toggle("hidden", !!t.base_url || t.kind !== "custom");
   $("#qf-url").value = t.base_url || "";
 
   $("#qf-key-row").classList.toggle("hidden", t.kind === "oss");
@@ -181,6 +182,8 @@ $("#qf-apply").addEventListener("click", async () => {
       if (!$("#qf-url-row").classList.contains("hidden")) {
         payload.base_url = $("#qf-url").value.trim();
       }
+    }
+    if (t.kind === "custom" || t.kind === "builtin") {
       payload.api_key = $("#qf-key").value.trim() || null;
       payload.env_scope = $("#qf-scope").value;
     }
