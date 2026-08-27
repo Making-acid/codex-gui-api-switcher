@@ -56,28 +56,32 @@ let STATE = {
   backups: [],         // /api/backups
   defaults: [],        // /api/defaults
   env: null,           // /api/env
+  baseline: null,      // /api/baseline
   currentTemplate: null,
 };
 
 async function refreshAll() {
-  const [cfg, templates, backups, defaults, env] = await Promise.all([
+  const [cfg, templates, backups, defaults, env, baseline] = await Promise.all([
     api("/api/config"),
     api("/api/templates"),
     api("/api/backups"),
     api("/api/defaults"),
     api("/api/env?scope=all"),
+    api("/api/baseline"),
   ]);
   STATE.config = cfg.config;
   STATE.templates = templates.templates;
   STATE.backups = backups.backups;
   STATE.defaults = defaults.defaults;
   STATE.env = env.env;
+  STATE.baseline = baseline.baseline;
   renderStatus();
   renderTemplateGrid();
   renderProviders();
   renderBackups();
   renderDefaults();
   renderEnv();
+  renderBaseline();
   fillTestFromConfig();
 }
 
@@ -574,6 +578,40 @@ $("#bk-reset").addEventListener("click", async () => {
     if (!keys.length) return;
     const res = await api("/api/reset", { method: "POST", body: { keys } });
     toast(res.message || "已恢复默认", "ok");
+    await refreshAll();
+  } catch (err) { toast(err.message, "err"); }
+});
+
+/* ---------------- baseline：恢复初始状态 ---------------- */
+
+function renderBaseline() {
+  const btn = $("#bk-baseline");
+  const info = $("#bk-baseline-info");
+  if (!STATE.baseline || !STATE.baseline.exists) {
+    btn.disabled = true;
+    btn.title = "尚未记录初始状态快照";
+    info.textContent = "（尚未记录快照：首次运行本工具时会自动生成）";
+  } else {
+    btn.disabled = false;
+    btn.title = "";
+    info.textContent = `${STATE.baseline.created_at} 的快照`;
+  }
+}
+
+$("#bk-baseline").addEventListener("click", async () => {
+  const b = STATE.baseline;
+  if (!b || !b.exists) {
+    toast("尚未记录初始状态快照（首次运行本工具时自动生成）", "ok");
+    return;
+  }
+  const ok = await modalConfirm("恢复初始状态（Codex 原始配置）",
+    `<p>将把 <b>config.toml</b> 还原为 <b>${esc(b.created_at)}</b> 时快照的 Codex 原始配置。</p>
+     <p style="color:var(--yellow)">⚠️ 包括当时已有的插件/MCP 配置都会一并还原；操作前会自动备份当前配置，之后可随时回退。</p>
+     <p>完成后需重启 Codex Desktop 生效。</p>`);
+  if (!ok) return;
+  try {
+    const res = await api("/api/baseline/restore", { method: "POST", body: {} });
+    toast(res.message || "已恢复初始状态", "ok");
     await refreshAll();
   } catch (err) { toast(err.message, "err"); }
 });

@@ -14,7 +14,7 @@ from urllib.parse import urlparse
 
 from flask import Flask, jsonify, request, send_from_directory
 
-from core.backups import BackupManager
+from core.backups import BackupError, BackupManager
 from core.config_manager import ConfigManager, ConfigError
 from core.connectivity import test_connection
 from core.env_manager import EnvError, EnvManager
@@ -42,6 +42,9 @@ def create_app(config_manager: ConfigManager | None = None,
     env = env_manager or EnvManager()
     backups = BackupManager(mgr)
     state_lock = threading.RLock()
+
+    # 首次运行时自动生成初始状态快照（baseline），供"恢复 Codex 原始配置"使用
+    backups.ensure_baseline()
 
     # ------------------------------------------------------------------
     # 鉴权：token 校验 + Origin 校验（仅 /api/*）
@@ -294,6 +297,38 @@ def create_app(config_manager: ConfigManager | None = None,
         except Exception as exc:
             return _err(str(exc), 400)
         return jsonify({"ok": True, **result, "message": "已恢复。"})
+
+    # ------------------------------------------------------------------
+    # baseline（初始状态快照）
+    # ------------------------------------------------------------------
+
+    @app.get("/api/baseline")
+    def get_baseline():
+        info = backups.get_baseline()
+        if info["exists"]:
+            info["note"] = "首次运行本工具时自动快照的 Codex 原始配置"
+        return jsonify({"ok": True, "baseline": info})
+
+    @app.post("/api/baseline/restore")
+    def restore_baseline():
+        with state_lock:
+            try:
+                result = backups.restore_baseline()
+            except BackupError as exc:
+                return _err(str(exc), 400)
+        return jsonify({
+            **result,
+            "message": "已恢复到初始状态（Codex 原始配置）。请重启 Codex Desktop 后生效。",
+        })
+
+    @app.post("/api/baseline/refresh")
+    def refresh_baseline():
+        with state_lock:
+            try:
+                result = backups.refresh_baseline()
+            except BackupError as exc:
+                return _err(str(exc), 400)
+        return jsonify({"ok": True, **result})
 
     # ------------------------------------------------------------------
     # 覆盖追踪 / 恢复默认

@@ -199,8 +199,10 @@
       <div class="actions">
         <button id="bk-create" class="primary">创建备份</button>
         <button id="bk-reset" class="danger">恢复默认（移除本工具的覆盖）</button>
+        <button id="bk-baseline" class="ghost">恢复初始状态（Codex 原始配置）</button>
       </div>
-      <p class="hint">「恢复默认」只移除本工具修改过的键，插件/MCP 等配置不受影响；会先自动备份。</p>
+      <p class="hint">「恢复默认」只移除本工具修改过的键，插件/MCP 等配置不受影响；会先自动备份。
+      「恢复初始状态」会把配置还原为<span id="bk-baseline-info">首次运行本工具时</span>的快照，同样会先自动备份。</p>
     </div>
     <div class="panel">
       <h3>备份列表</h3>

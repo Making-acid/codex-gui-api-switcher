@@ -1,4 +1,4 @@
-"""config.toml 备份 / 恢复 / 恢复默认（覆盖清单式）。"""
+"""config.toml 备份 / 恢复 / 恢复默认（覆盖清单式）/ baseline 初始快照。"""
 from __future__ import annotations
 
 import json
@@ -11,6 +11,7 @@ from core.config_manager import ConfigManager
 
 BACKUP_DIR = "backups"
 MANIFEST = "backups.json"
+BASELINE_FILE = "baseline.toml"
 
 
 class BackupError(Exception):
@@ -95,6 +96,66 @@ class BackupManager:
             # 文件状态已回退，旧的覆盖记录不再适用
             self._clear_overrides()
             return {"ok": True, "restored": target["file"]}
+
+    # ------------------------------------------------------------------
+    # baseline：初始状态快照（"Codex 原始配置"一键恢复）
+    # ------------------------------------------------------------------
+
+    def baseline_path(self) -> Path:
+        return self.mgr.data_dir / BASELINE_FILE
+
+    def ensure_baseline(self) -> None:
+        """首次运行（或 baseline 不存在）时，把当前 config.toml 存为初始快照。
+
+        只存一次；之后用户对 API 的任何修改都不会影响 baseline。
+        """
+        with self._lock:
+            if not self.mgr.exists():
+                return
+            if self.baseline_path().is_file():
+                return
+            self.mgr.data_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(self.mgr.config_path, self.baseline_path())
+
+    def get_baseline(self) -> dict:
+        path = self.baseline_path()
+        if not path.is_file():
+            return {"exists": False}
+        stat = path.stat()
+        return {
+            "exists": True,
+            "path": str(path),
+            "created_at": datetime.fromtimestamp(stat.st_mtime).strftime("%Y-%m-%d %H:%M:%S"),
+            "size": stat.st_size,
+        }
+
+    def restore_baseline(self) -> dict:
+        """一键恢复初始状态：自动备份当前 → 还原 baseline → 清空覆盖记录。"""
+        with self._lock:
+            if not self.baseline_path().is_file():
+                raise BackupError("尚未记录初始状态快照（首次运行本工具时自动生成）")
+            try:
+                self.create_backup(note="恢复初始状态前", source="pre_restore")
+            except BackupError:
+                pass
+            shutil.copy2(self.baseline_path(), self.mgr.config_path)
+            self._clear_overrides()
+            return {"ok": True, "restored": BASELINE_FILE}
+
+    def refresh_baseline(self) -> dict:
+        """把当前 config.toml 重新定义为初始状态（原 baseline 被覆盖，先备份）。"""
+        with self._lock:
+            if not self.mgr.exists():
+                raise BackupError(f"配置文件不存在: {self.mgr.config_path}")
+            if self.baseline_path().is_file():
+                try:
+                    self.create_backup(note="刷新 baseline 前的旧快照", source="manual")
+                except BackupError:
+                    pass
+            self.mgr.data_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(self.mgr.config_path, self.baseline_path())
+            self._clear_overrides()
+            return {"ok": True, "message": "已把当前配置设为初始状态。"}
 
     # ------------------------------------------------------------------
     # 内部
