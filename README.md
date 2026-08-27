@@ -26,6 +26,8 @@ python app.py --browser  # 浏览器模式
 python app.py --no-window --port 18080   # 只起服务（调试 API）
 ```
 
+也可以直接双击 **`启动-浏览器版.bat`**（自动检查 Python 与依赖，首次运行自动安装，然后启动服务并用默认浏览器打开）。
+
 ## 打包 exe
 
 ```bash
