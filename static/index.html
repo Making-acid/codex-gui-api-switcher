@@ -27,7 +27,15 @@
   <!-- ============ 快速切换 ============ -->
   <section id="tab-quick" class="tab-view active">
     <h2>一键切换供应商</h2>
-    <p class="hint">选择供应商模板 → 选模型 → 填 API key → 点击「应用」。切换前会自动备份，可随时回退。</p>
+    <div class="guide">
+      <p>这里是主要入口：选供应商卡片 → 选模型 → 填 API key → 点「应用」。切换前会自动备份，随时可回退。</p>
+      <p>「ChatGPT 订阅」= 用你的 ChatGPT 账号登录（Plus/Pro 订阅配额），是 Codex 原生默认模式；其余卡片 = 第三方/API 计费模式。</p>
+    </div>
+    <div class="actions quick-actions">
+      <button id="qa-baseline" class="danger">重置为 Codex 原始状态</button>
+      <button id="qa-reset" class="ghost">移除本工具覆盖</button>
+      <button id="qa-backup" class="ghost">创建备份</button>
+    </div>
     <div id="template-grid" class="grid"></div>
 
     <div id="quick-form" class="panel hidden">
@@ -69,7 +77,10 @@
   <!-- ============ Provider 管理 ============ -->
   <section id="tab-providers" class="tab-view hidden">
     <h2>Provider 管理</h2>
-    <p class="hint">管理 config.toml 中的 model_providers 与全局设置。内置 ID（openai/ollama/lmstudio/amazon-bedrock）不可覆盖。</p>
+    <div class="guide">
+      <p>这里管理 config.toml 中的自定义供应商条目（model_providers）与全局设置。</p>
+      <p>在「快速切换」页应用模板后，条目会自动出现在下方列表；也可以点「新增 Provider」手动创建。内置 ID（openai/ollama/lmstudio/amazon-bedrock）不可覆盖。</p>
+    </div>
     <div id="provider-list"></div>
     <div id="provider-form" class="panel hidden">
       <h3 id="pf-title">Provider</h3>
@@ -143,6 +154,10 @@
   <!-- ============ 连接测试 ============ -->
   <section id="tab-test" class="tab-view hidden">
     <h2>连接测试</h2>
+    <div class="guide">
+      <p>验证某个 API 地址和 key 是否真的可用：发送一个最小 /responses 请求（判定标准），附带探测 /models 列出可用模型（失败不影响判定）。</p>
+      <p>默认已预填当前生效 provider 的地址与模型，改完直接点「运行测试」。</p>
+    </div>
     <div class="panel">
       <div class="form-row">
         <label>Base URL</label>
@@ -167,6 +182,12 @@
   <!-- ============ 环境变量 ============ -->
   <section id="tab-env" class="tab-view hidden">
     <h2>环境变量</h2>
+    <div class="guide">
+      <p>管理 API key 等环境变量的存放位置（两种 scope 并存）：</p>
+      <p><b>左侧「用户环境变量」</b>：Windows 用户级（注册表持久化），Codex Desktop 能读取，推荐在这里存 key，写后需重启 Desktop 生效。</p>
+      <p><b>右侧「.env 文件」</b>：仅供自定义启动脚本使用（Codex 桌面应用不读取）。可一键互相导入导出。</p>
+      <p id="env-active-keys" class="hint"></p>
+    </div>
     <div class="env-actions">
       <button class="ghost" id="env-file-to-user">从 .env 导入到用户环境变量</button>
       <button class="ghost" id="env-user-to-file">从用户环境变量导出到 .env</button>
@@ -225,7 +246,10 @@
   <section id="tab-commands" class="tab-view hidden">
     <div class="placeholder">
       <h2>命令中心</h2>
-      <p>codex doctor / exec / login 的图形化执行将在 1.1 版本提供。</p>
+      <p style="margin:10px 0">该页面用于图形化执行 codex 命令（doctor 诊断 / exec 对话 / login 登录切换账号），
+      将在 <b>1.1 版本</b> 提供，开发中。</p>
+      <p class="hint">规划功能：自动发现 codex.exe、运行 codex doctor / codex exec / codex login、
+      流式输出终端样式、随时终止运行中的命令。</p>
     </div>
   </section>
 </main>

@@ -18,10 +18,17 @@ from core.backups import BackupError, BackupManager
 from core.config_manager import ConfigManager, ConfigError
 from core.connectivity import test_connection
 from core.env_manager import EnvError, EnvManager
-from core.providers import TemplateError, build_apply_config, load_templates
+from core.providers import (
+    CHATGPT_CLEAR_MARKER,
+    TemplateError,
+    build_apply_config,
+    build_chatgpt_clear_config,
+    load_templates,
+)
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 DEFAULTS_FILE = "my-defaults.json"
+VERSION = "1.1.0"
 
 # 保留（read_api_config 返回 raw 中含 experimental_bearer_token 明文，
 # 不再对外返回 raw 字段）
@@ -102,6 +109,8 @@ def create_app(config_manager: ConfigManager | None = None,
     def status():
         return jsonify({
             "ok": True,
+            "version": VERSION,
+            "template_count": len(load_templates()),
             "platform": "windows",
             "config": {
                 "path": str(mgr.config_path),
@@ -164,6 +173,15 @@ def create_app(config_manager: ConfigManager | None = None,
         env_key = built["env_key"]
         api_key = body.get("api_key")
 
+        # ChatGPT 订阅模式：展开为清空全部 API 覆盖的指令
+        if api_config.get(CHATGPT_CLEAR_MARKER):
+            api_config = build_chatgpt_clear_config(mgr.read_api_config())
+            env_key = None
+            api_key = None
+            chatgpt_mode = True
+        else:
+            chatgpt_mode = False
+
         with state_lock:
             _auto_backup(f"应用模板 {template_id}")
             try:
@@ -190,9 +208,12 @@ def create_app(config_manager: ConfigManager | None = None,
             "env_key": env_key,
             "env_scope": env_scope,
             "restart_required": (bool(api_key) and bool(env_key) and env_scope == "user"),
-            "message": "应用成功。若写入的是用户环境变量，请重启 Codex Desktop 后生效。"
-            if (bool(api_key) and bool(env_key) and env_scope == "user")
-            else "应用成功。",
+            "message": ("已切回 ChatGPT 订阅模式（Codex 原生登录态）。请重启 Codex Desktop，"
+                        "用你的 ChatGPT 账号登录即可使用订阅配额。")
+            if chatgpt_mode
+            else ("应用成功。若写入的是用户环境变量，请重启 Codex Desktop 后生效。"
+                  if (bool(api_key) and bool(env_key) and env_scope == "user")
+                  else "应用成功。"),
         })
 
     # ------------------------------------------------------------------

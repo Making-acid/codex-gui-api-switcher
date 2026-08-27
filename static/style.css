@@ -49,6 +49,16 @@ h2 { font-size: 18px; margin-bottom: 6px; }
 h3 { font-size: 15px; margin-bottom: 10px; }
 .hint { color: var(--muted); font-size: 13px; margin-bottom: 14px; }
 
+.guide {
+  background: var(--bg2); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+  border-radius: var(--radius); padding: 12px 14px; margin: 10px 0 14px;
+  font-size: 13px; color: var(--muted); line-height: 1.7;
+}
+.guide p { margin: 2px 0; }
+.guide b { color: var(--text); }
+
+.quick-actions { margin: 8px 0 14px; }
+
 .grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;
 }

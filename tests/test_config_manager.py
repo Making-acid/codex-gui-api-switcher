@@ -126,6 +126,19 @@ class ConfigManagerTest(unittest.TestCase):
         self.assertIsNone(cfg["model_provider"])
         self.assertEqual(self.mgr.get_overrides(), [])
 
+    def test_restore_rebuilds_deleted_key(self):
+        # model 原本存在（gpt-5.6-sol）：覆盖后删除，恢复必须重建；
+        # model_provider / p 原本不存在：恢复 = 保持删除
+        self.mgr.write({"model": "gpt-x", "model_provider": "p",
+                        "model_providers": {"p": {"name": "P", "base_url": "u"}}})
+        self.mgr.write({"model": None, "model_provider": None,
+                        "model_providers": {"p": None}})
+        self.mgr.restore_overrides()
+        cfg = self.mgr.read_api_config()
+        self.assertEqual(cfg["model"], "gpt-5.6-sol")
+        self.assertIsNone(cfg["model_provider"])
+        self.assertEqual(cfg["model_providers"], {})
+
     def test_roundtrip_provider_fields(self):
         self.mgr.write({
             "model_providers": {

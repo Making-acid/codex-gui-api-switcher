@@ -219,5 +219,53 @@ class BackupTsTest(unittest.TestCase):
         self.assertIsInstance(out["b"], dict)
 
 
+class ChatgptModeTest(unittest.TestCase):
+    """ChatGPT 订阅模式：清空全部 API 覆盖。"""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        self.cfg = self.root / "config.toml"
+        self.cfg.write_text('model = "gpt-5.6-sol"\n[plugins."x"]\nenabled = true\n',
+                            encoding="utf-8")
+        self.mgr = ConfigManager(config_path=self.cfg, data_dir=self.root / "data")
+        self.base = start_server(self.mgr)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_build_chatgpt_clear_config(self):
+        from core.providers import build_chatgpt_clear_config
+        current = {"model_providers": {"a": {}, "b": {}}}
+        out = build_chatgpt_clear_config(current)
+        self.assertIsNone(out["model_provider"])
+        self.assertIsNone(out["openai_base_url"])
+        self.assertIsNone(out["oss_provider"])
+        self.assertEqual(out["model_providers"], {"a": None, "b": None})
+
+    def test_apply_chatgpt_clears_api(self):
+        # 先应用一个模板制造覆盖
+        r = requests.post(self.base + "/api/templates/apply",
+                          json={"template_id": "openai"}, timeout=5)
+        self.assertEqual(r.status_code, 200)
+        # 应用 ChatGPT 订阅模式
+        r = requests.post(self.base + "/api/templates/apply",
+                          json={"template_id": "chatgpt"}, timeout=5)
+        self.assertEqual(r.status_code, 200)
+        self.assertIn("ChatGPT", r.json()["message"])
+        cfg = requests.get(self.base + "/api/config", timeout=5).json()["config"]
+        self.assertIsNone(cfg["model_provider"])
+        self.assertEqual(cfg["model_providers"], {})
+        # 插件段保留
+        raw = self.cfg.read_text(encoding="utf-8")
+        self.assertIn("browser", raw) if "browser" in raw else self.assertIn("x", raw)
+
+    def test_chatgpt_is_initial_active_state(self):
+        r = requests.get(self.base + "/api/config", timeout=5)
+        cfg = r.json()["config"]
+        self.assertIsNone(cfg["model_provider"])
+        self.assertEqual(cfg["model_providers"], {})
+
+
 if __name__ == "__main__":
     unittest.main()

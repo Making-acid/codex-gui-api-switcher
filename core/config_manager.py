@@ -217,7 +217,9 @@ class ConfigManager:
                 resolved = _resolve_path(doc, key)
                 before = _key_value(*resolved) if resolved else None
                 if resolved is None:
-                    # 键当前不存在（曾手动删除等情况）→ 只需从追踪清单摘除
+                    # 键当前不存在：原值非空则重建（含嵌套路径），否则仅摘除记录
+                    if entry["before"] is not None:
+                        _set_path(doc, key, entry["before"])
                     changes.append({"key": key, "before": before, "after": entry["before"]})
                     remaining = [o for o in remaining if o["key"] != key]
                     continue
@@ -356,6 +358,17 @@ def _resolve_path(doc, path: str):
     if not isinstance(node, dict) or parts[-1] not in node:
         return None
     return (node, parts[-1])
+
+
+def _set_path(doc, path: str, value) -> None:
+    """按带点路径重建键（父容器缺失时自动创建 tomlkit table）。"""
+    parts = path.split(".")
+    node = doc
+    for part in parts[:-1]:
+        if part not in node or not isinstance(node[part], dict):
+            node[part] = tomlkit.table()
+        node = node[part]
+    node[parts[-1]] = _to_toml(value)
 
 
 def _to_toml(value):

@@ -1,5 +1,17 @@
 [
   {
+    "id": "chatgpt",
+    "name": "ChatGPT 订阅（Codex 配额）",
+    "kind": "chatgpt",
+    "provider_id": null,
+    "base_url": null,
+    "default_model": null,
+    "models": [],
+    "default_env_key": null,
+    "query_params": null,
+    "notes": "Codex 原生默认模式：用 ChatGPT 账号登录（Plus/Pro 订阅）使用订阅配额，不按 API 计费。一键清空所有自定义 API 配置并切回；无需填写任何 Key。"
+  },
+  {
     "id": "openai",
     "name": "OpenAI 官方",
     "kind": "custom",
@@ -9,7 +21,7 @@
     "models": ["gpt-5.6", "gpt-5.4", "gpt-5.2", "gpt-5.6-sol", "gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.1", "gpt-4.1"],
     "default_env_key": "OPENAI_API_KEY",
     "query_params": null,
-    "notes": "OpenAI 官方 API，需要官方 API key。"
+    "notes": "OpenAI 官方 API（按 token 计费），需要官方 API key。注意：与 ChatGPT 订阅配额是两套计费，订阅用户请用上方「ChatGPT 订阅」卡片。"
   },
   {
     "id": "azure-openai",

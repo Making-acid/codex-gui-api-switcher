@@ -14,6 +14,11 @@ KIND_CUSTOM = "custom"
 # Codex 内置 provider（如 amazon-bedrock）：只写 model_provider + model，
 # 不定义 model_providers 子表（内置定义已存在于 Codex 二进制中）
 KIND_BUILTIN = "builtin"
+# ChatGPT 订阅（Codex 配额）：Codex 原生登录模式，清空全部自定义 API 覆盖
+KIND_CHATGPT = "chatgpt"
+
+# 模板 kind 下发的配置携带的清除标记
+CHATGPT_CLEAR_MARKER = "_clear_all_api"
 
 
 class TemplateError(Exception):
@@ -97,4 +102,27 @@ def build_apply_config(template_id: str, model: str | None = None,
             config["model"] = model
         return {"config": config, "env_key": env_key}
 
-    raise TemplateError(f"模板 kind 不支持: {kind}（支持 custom/oss/builtin）")
+    if kind == KIND_CHATGPT:
+        # 清空全部 API 覆盖的标记由 server 层展开（需要读当前 config 枚举 provider）
+        return {"config": {CHATGPT_CLEAR_MARKER: True}, "env_key": None}
+
+    raise TemplateError(f"模板 kind 不支持: {kind}（支持 custom/oss/builtin/chatgpt）")
+
+
+def build_chatgpt_clear_config(current_api_config: dict) -> dict:
+    """构造「ChatGPT 订阅模式」清除指令：删除全部 API 相关覆盖。
+
+    - model / model_provider / openai_base_url / oss_provider → 删除
+    - 当前所有自定义 model_providers.X → 删除
+    插件/MCP 等无关配置不受影响。
+    """
+    providers = {
+        pid: None for pid in (current_api_config.get("model_providers") or {})
+    }
+    return {
+        "model": None,
+        "model_provider": None,
+        "openai_base_url": None,
+        "oss_provider": None,
+        "model_providers": providers,
+    }

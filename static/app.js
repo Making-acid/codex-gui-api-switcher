@@ -51,6 +51,7 @@ function modalConfirm(title, bodyHtml, okText = "确定") {
 /* ---------------- 状态 ---------------- */
 
 let STATE = {
+  status: null,        // /api/status（版本/模板数）
   config: null,        // /api/config
   templates: [],       // /api/templates
   backups: [],         // /api/backups
@@ -61,7 +62,8 @@ let STATE = {
 };
 
 async function refreshAll() {
-  const [cfg, templates, backups, defaults, env, baseline] = await Promise.all([
+  const [status, cfg, templates, backups, defaults, env, baseline] = await Promise.all([
+    api("/api/status"),
     api("/api/config"),
     api("/api/templates"),
     api("/api/backups"),
@@ -69,6 +71,7 @@ async function refreshAll() {
     api("/api/env?scope=all"),
     api("/api/baseline"),
   ]);
+  STATE.status = status;
   STATE.config = cfg.config;
   STATE.templates = templates.templates;
   STATE.backups = backups.backups;
@@ -87,9 +90,11 @@ async function refreshAll() {
 
 function renderStatus() {
   const c = STATE.config;
+  const ver = STATE.status ? `v${STATE.status.version}` : "";
+  const tcount = STATE.status ? `${STATE.status.template_count} 模板` : "";
   const active = c.model_provider || (c.openai_base_url ? "openai (openai_base_url)" : "未设置");
   $("#status-config").textContent =
-    `config: ${c.path}${c.exists ? "" : "（不存在）"} ｜ 当前 provider: ${active} ｜ 模型: ${c.model || "未设置"}`;
+    `${ver} · ${tcount} ｜ config: ${c.path}${c.exists ? "" : "（不存在）"} ｜ 当前: ${active} ｜ 模型: ${c.model || "未设置"}`;
 }
 
 /* ---------------- Tab 切换 ---------------- */
@@ -123,6 +128,11 @@ function renderTemplateGrid() {
 
 function isTemplateActive(t) {
   const c = STATE.config;
+  if (t.kind === "chatgpt") {
+    // 原生模式 = 无任何 API 覆盖
+    return !c.model_provider && !c.oss_provider && !c.openai_base_url &&
+      Object.keys(c.model_providers || {}).length === 0;
+  }
   if (t.kind === "oss") return c.oss_provider === (t.oss_id || t.id);
   if (t.kind === "builtin" || t.kind === "custom") {
     const pid = t.provider_id || t.id;
@@ -138,24 +148,37 @@ function selectTemplate(t) {
   $("#quick-form-title").textContent = `${t.name} — 一键应用`;
   $("#qf-notes").textContent = t.notes || "";
 
-  const datalist = $("#qf-models");
-  datalist.innerHTML = "";
-  (t.models || []).forEach((m) => {
-    const opt = document.createElement("option");
-    opt.value = m;
-    datalist.appendChild(opt);
-  });
-  $("#qf-model").value = t.default_model || "";
+  if (t.kind === "chatgpt") {
+    // 订阅模式：无需模型/key/地址，只需确认
+    $("#qf-model").value = "";
+    $("#qf-provider-row").classList.add("hidden");
+    $("#qf-url-row").classList.add("hidden");
+    $("#qf-key-row").classList.add("hidden");
+    $("#qf-scope-row").classList.add("hidden");
+    $("#qf-apply").textContent = "切回订阅模式";
+    $("#qf-apply").className = "primary danger-text";
+  } else {
+    $("#qf-apply").textContent = "应用并切换";
+    $("#qf-apply").className = "primary";
+    const datalist = $("#qf-models");
+    datalist.innerHTML = "";
+    (t.models || []).forEach((m) => {
+      const opt = document.createElement("option");
+      opt.value = m;
+      datalist.appendChild(opt);
+    });
+    $("#qf-model").value = t.default_model || "";
 
-  $("#qf-provider-row").classList.toggle("hidden", !(t.kind === "custom" && !t.provider_id));
-  $("#qf-provider").value = t.provider_id || "my-provider";
+    $("#qf-provider-row").classList.toggle("hidden", !(t.kind === "custom" && !t.provider_id));
+    $("#qf-provider").value = t.provider_id || "my-provider";
 
-  $("#qf-url-row").classList.toggle("hidden", !!t.base_url || t.kind !== "custom");
-  $("#qf-url").value = t.base_url || "";
+    $("#qf-url-row").classList.toggle("hidden", !!t.base_url || t.kind !== "custom");
+    $("#qf-url").value = t.base_url || "";
 
-  $("#qf-key-row").classList.toggle("hidden", t.kind === "oss");
-  $("#qf-key").value = "";
-  $("#qf-scope-row").classList.toggle("hidden", t.kind === "oss");
+    $("#qf-key-row").classList.toggle("hidden", t.kind === "oss");
+    $("#qf-key").value = "";
+    $("#qf-scope-row").classList.toggle("hidden", t.kind === "oss");
+  }
 
   $("#qf-result").classList.add("hidden");
   $("#quick-form").scrollIntoView({ behavior: "smooth" });
@@ -191,6 +214,7 @@ $("#qf-apply").addEventListener("click", async () => {
       payload.api_key = $("#qf-key").value.trim() || null;
       payload.env_scope = $("#qf-scope").value;
     }
+    // chatgpt：仅 template_id 即可
     const res = await api("/api/templates/apply", { method: "POST", body: payload });
     showResult($("#qf-result"), res.message, "ok");
     toast("切换成功，已自动备份", "ok");
@@ -210,7 +234,7 @@ function renderProviders() {
   const providers = STATE.config.model_providers || {};
   const ids = Object.keys(providers);
   if (!ids.length) {
-    list.innerHTML = '<p class="hint">暂无自定义 provider。可在「快速切换」页应用模板，或点击下方「新增」。</p>';
+    list.innerHTML = '<div class="guide"><p>暂无自定义 provider。</p><p>去「快速切换」页点一个供应商卡片并应用，条目会自动出现在这里；也可以点下方「新增 Provider」手动创建。</p></div>';
   }
   ids.forEach((pid) => {
     const p = providers[pid];
@@ -349,6 +373,11 @@ function fillTestFromConfig() {
     $("#ct-url").value = c.model_providers[pid].base_url || "";
   }
   if (c.model && !$("#ct-model").value) $("#ct-model").value = c.model;
+  const empty = !$("#ct-url").value;
+  const hint = document.querySelector("#tab-test .guide p:last-child");
+  if (empty && hint) {
+    hint.textContent = "当前没有任何生效的 API provider（ChatGPT 订阅模式无需测试）。先在「快速切换」应用一个模板，或在此手动填写地址测试。";
+  }
 }
 
 $("#ct-key-toggle").addEventListener("click", () => {
@@ -400,6 +429,20 @@ function renderEnv() {
   renderEnvRows("user");
   renderEnvRows("file");
   $("#env-file-path").textContent = `(${esc(STATE.env.env_file)})`;
+  // 高亮当前模板使用的 env_key
+  const keys = [];
+  const c = STATE.config;
+  const active = c.model_provider && c.model_providers ? c.model_providers[c.model_provider] : null;
+  if (active && active.env_key) keys.push(active.env_key);
+  (Object.values(c.model_providers || {})).forEach((p) => {
+    if (p.env_key && !keys.includes(p.env_key)) keys.push(p.env_key);
+  });
+  const el = $("#env-active-keys");
+  if (keys.length) {
+    el.textContent = `当前配置用到的 key 变量：${keys.join("、")}（确保已在此页设置）`;
+  } else {
+    el.textContent = "当前为 ChatGPT 订阅模式或未配置 key 类 provider，无需设置环境变量。";
+  }
 }
 
 function renderEnvRows(scope) {
@@ -407,7 +450,11 @@ function renderEnvRows(scope) {
   const rows = envDraft[scope];
   list.innerHTML = "";
   rows.forEach((row, idx) => list.appendChild(envRowEl(scope, idx)));
-  if (!rows.length) list.innerHTML = '<p class="hint">（空）</p>';
+  if (!rows.length) {
+    list.innerHTML = scope === "user"
+      ? '<p class="hint">（暂无用户级变量）在「快速切换」填 key 应用后会自动出现在这里；也可点下方「新增」手动添加。</p>'
+      : '<p class="hint">（.env 为空）可点下方「新增」，或从左侧用户变量导出。</p>';
+  }
 }
 
 function envRowEl(scope, idx) {
@@ -558,6 +605,25 @@ async function restoreBackup(b) {
 }
 
 $("#bk-reset").addEventListener("click", async () => {
+  await doResetOverrides();
+});
+
+/* 快速切换页顶部的重置操作栏 */
+$("#qa-baseline").addEventListener("click", async () => {
+  await doRestoreBaseline();
+});
+$("#qa-reset").addEventListener("click", async () => {
+  await doResetOverrides();
+});
+$("#qa-backup").addEventListener("click", async () => {
+  try {
+    await api("/api/backups", { method: "POST", body: {} });
+    toast("备份已创建", "ok");
+    await refreshAll();
+  } catch (err) { toast(err.message, "err"); }
+});
+
+async function doResetOverrides() {
   try {
     const { overrides } = await api("/api/overrides");
     if (!overrides.length) {
@@ -580,7 +646,25 @@ $("#bk-reset").addEventListener("click", async () => {
     toast(res.message || "已恢复默认", "ok");
     await refreshAll();
   } catch (err) { toast(err.message, "err"); }
-});
+}
+
+async function doRestoreBaseline() {
+  const b = STATE.baseline;
+  if (!b || !b.exists) {
+    toast("尚未记录初始状态快照（首次运行本工具时自动生成）", "ok");
+    return;
+  }
+  const ok = await modalConfirm("重置为 Codex 原始状态",
+    `<p>将把 <b>config.toml</b> 还原为 <b>${esc(b.created_at)}</b> 时快照的 Codex 原始配置。</p>
+     <p style="color:var(--yellow)">⚠️ 包括当时已有的插件/MCP 配置都会一并还原；操作前会自动备份当前配置，之后可随时回退。</p>
+     <p>完成后需重启 Codex Desktop 生效。</p>`);
+  if (!ok) return;
+  try {
+    const res = await api("/api/baseline/restore", { method: "POST", body: {} });
+    toast(res.message || "已恢复初始状态", "ok");
+    await refreshAll();
+  } catch (err) { toast(err.message, "err"); }
+}
 
 /* ---------------- baseline：恢复初始状态 ---------------- */
 
@@ -599,21 +683,7 @@ function renderBaseline() {
 }
 
 $("#bk-baseline").addEventListener("click", async () => {
-  const b = STATE.baseline;
-  if (!b || !b.exists) {
-    toast("尚未记录初始状态快照（首次运行本工具时自动生成）", "ok");
-    return;
-  }
-  const ok = await modalConfirm("恢复初始状态（Codex 原始配置）",
-    `<p>将把 <b>config.toml</b> 还原为 <b>${esc(b.created_at)}</b> 时快照的 Codex 原始配置。</p>
-     <p style="color:var(--yellow)">⚠️ 包括当时已有的插件/MCP 配置都会一并还原；操作前会自动备份当前配置，之后可随时回退。</p>
-     <p>完成后需重启 Codex Desktop 生效。</p>`);
-  if (!ok) return;
-  try {
-    const res = await api("/api/baseline/restore", { method: "POST", body: {} });
-    toast(res.message || "已恢复初始状态", "ok");
-    await refreshAll();
-  } catch (err) { toast(err.message, "err"); }
+  await doRestoreBaseline();
 });
 
 function renderDefaults() {
