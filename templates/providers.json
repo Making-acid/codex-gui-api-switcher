@@ -156,6 +156,66 @@
     "notes": "开源模型推理平台。官方完整支持 Responses API（含 MCP 工具、previous_response_id、流式）。模型 ID 形如 accounts/fireworks/models/<模型>。"
   },
   {
+    "id": "digitalocean",
+    "name": "DigitalOcean AI Platform",
+    "kind": "custom",
+    "provider_id": "digitalocean",
+    "base_url": "https://inference.do-ai.run/v1",
+    "default_model": "openai-gpt-oss-20b",
+    "models": ["openai-gpt-oss-20b", "openai-gpt-oss-120b"],
+    "default_env_key": "DIGITALOCEAN_TOKEN",
+    "query_params": null,
+    "notes": "DigitalOcean Serverless Inference 官方 /v1/responses 端点。模型 ID 用 DO 前缀格式（如 openai-gpt-oss-20b），完整清单见其 available models 页面。"
+  },
+  {
+    "id": "sambanova",
+    "name": "SambaNova（RDU 超快推理）",
+    "kind": "custom",
+    "provider_id": "sambanova",
+    "base_url": "https://api.sambanova.ai/v1",
+    "default_model": "gpt-oss-120b",
+    "models": ["gpt-oss-120b", "MiniMax-M2.7", "MiniMax-M2.5", "DeepSeek-V3.1"],
+    "default_env_key": "SAMBANOVA_API_KEY",
+    "query_params": null,
+    "notes": "RDU 架构超快推理。官方支持 /v1/responses（无状态，不支持 previous_response_id 与服务端内置工具），官方博客提供 Codex 直连配置示例。"
+  },
+  {
+    "id": "nebius",
+    "name": "Nebius Token Factory",
+    "kind": "custom",
+    "provider_id": "nebius",
+    "base_url": "https://api.tokenfactory.nebius.com/v1",
+    "default_model": "moonshotai/Kimi-K2.5",
+    "models": ["moonshotai/Kimi-K2.5", "nebius/NousResearch/Hermes-4-405B", "meta-llama/Llama-3.3-70B-Instruct"],
+    "default_env_key": "NEBIUS_API_KEY",
+    "query_params": null,
+    "notes": "Nebius Token Factory 官方 /v1/responses（OpenAI 兼容）。模型 ID 为 厂商/模型 格式，可用 GET /v1/models 查询完整清单。"
+  },
+  {
+    "id": "vercel",
+    "name": "Vercel AI Gateway（聚合）",
+    "kind": "custom",
+    "provider_id": "vercel",
+    "base_url": "https://ai-gateway.vercel.sh/v1",
+    "default_model": "openai/gpt-5.6-sol",
+    "models": ["openai/gpt-5.6-sol", "openai/gpt-5.4", "anthropic/claude-opus-5", "anthropic/claude-sonnet-5"],
+    "default_env_key": "AI_GATEWAY_API_KEY",
+    "query_params": null,
+    "notes": "Vercel AI Gateway 官方 OpenAI Responses API。模型 ID 用 provider/model 格式，可路由 OpenAI/Anthropic/Google 等。"
+  },
+  {
+    "id": "cloudflare",
+    "name": "Cloudflare AI Gateway",
+    "kind": "custom",
+    "provider_id": "cloudflare",
+    "base_url": null,
+    "default_model": "openai/gpt-4.1",
+    "models": ["openai/gpt-4.1", "@cf/openai/gpt-oss-120b"],
+    "default_env_key": "CLOUDFLARE_API_TOKEN",
+    "query_params": null,
+    "notes": "Cloudflare AI Gateway /ai/v1/responses 端点。Base URL 需填 https://api.cloudflare.com/client/v4/accounts/<你的账户ID>/ai/v1；第三方模型用 provider/model 格式，Workers AI 模型用 @cf/ 前缀（仅 GPT-OSS 等部分支持 Responses）。"
+  },
+  {
     "id": "novai",
     "name": "NovAI（国产模型网关）",
     "kind": "custom",
