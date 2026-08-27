@@ -116,6 +116,25 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .advanced { border: 1px solid var(--border); border-radius: 6px; padding: 10px; margin-bottom: 10px; }
 .advanced summary { cursor: pointer; color: var(--muted); font-size: 13px; }
 
+/* summary / empty state */
+.summary-card { padding: 14px 16px; }
+.summary-card h3 { margin-bottom: 10px; }
+.stat-row {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px;
+}
+.stat {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 10px;
+}
+.stat-label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+.stat-value { display: block; font-size: 14px; font-weight: 600; color: var(--text); word-break: break-all; }
+.empty-state {
+  background: var(--bg2); border: 1px dashed var(--border); border-radius: var(--radius);
+  padding: 28px 20px; text-align: center; color: var(--muted); margin: 12px 0;
+}
+.empty-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.empty-state p { font-size: 13px; margin-bottom: 14px; line-height: 1.6; }
+.empty-add { margin: 0 auto; }
+
 /* provider 列表 */
 .prow {
   display: flex; align-items: center; gap: 10px; padding: 10px 12px;
@@ -131,9 +150,35 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
 .env-actions { display: flex; gap: 10px; margin-bottom: 10px; }
 .env-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+.env-row.active { border-left: 3px solid var(--accent); padding-left: 8px; margin-left: -11px; }
 .env-row input.env-name { flex: 1.2; min-width: 140px; }
 .env-row input.env-val { flex: 2; min-width: 200px; }
 .env-row .env-del { flex-shrink: 0; }
+
+/* key 摘要 */
+.key-list { display: grid; gap: 8px; }
+.key-item {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px;
+}
+.key-item code { font-family: Consolas, monospace; font-size: 13px; color: var(--text); }
+.key-item .tag.ok { color: var(--green); border-color: rgba(63,185,80,.35); }
+.key-item .tag.warn { color: var(--yellow); border-color: rgba(210,153,34,.35); }
+.key-item .hint { margin: 0; font-size: 12px; }
+
+/* 命令中心 */
+.command-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px;
+}
+.cmd-card {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px;
+}
+.cmd-card .cmd-head {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;
+}
+.cmd-card h4 { font-size: 14px; }
+.cmd-card p { color: var(--muted); font-size: 12px; line-height: 1.6; }
+.cmd-card.disabled { opacity: .55; pointer-events: none; }
 
 /* 备份列表 */
 .brow {
