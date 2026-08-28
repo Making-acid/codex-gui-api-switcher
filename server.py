@@ -437,11 +437,15 @@ def create_app(config_manager: ConfigManager | None = None,
 
     @app.get("/")
     def index():
-        return send_from_directory(STATIC_DIR, "index.html")
+        resp = send_from_directory(STATIC_DIR, "index.html")
+        resp.headers["Cache-Control"] = "no-store, max-age=0"
+        return resp
 
     @app.get("/<path:filename>")
     def static_files(filename: str):
-        return send_from_directory(STATIC_DIR, filename)
+        resp = send_from_directory(STATIC_DIR, filename)
+        resp.headers["Cache-Control"] = "no-store, max-age=0"
+        return resp
 
     return app
 
