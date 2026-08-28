@@ -68,7 +68,12 @@ CodexAPIManager.spec    # PyInstaller 打包配置
 
 ## 路线图
 
-- **1.1**：命令中心（codex doctor / exec / login 图形化执行）
+- **1.1：命令中心**（GUI 图形化执行 codex 命令，界面里不再展示占位内容，规划如下）
+  - **codex doctor**：一键诊断 Codex Desktop / CLI / 网络 / 配置健康状态
+  - **codex exec**：在 GUI 中用自然语言描述任务并执行，流式输出终端样式
+  - **codex login**：切换 ChatGPT 登录账号（配合 ChatGPT 订阅模式）
+  - **codex settings**：可视化查看 / 编辑 Codex 配置，与现有页面联动
+  - 基础设施：自动发现 `codex.exe` 路径、随时终止运行中的命令
 - **二期**：内置 Responses→Chat Completions 转换代理，解锁 DeepSeek / 通义 / 豆包 / Kimi / 智谱 / OpenRouter 等
 
 ## REST API 一览
