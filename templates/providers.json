@@ -24,6 +24,18 @@
     "notes": "OpenAI 官方 API（按 token 计费），需要官方 API key。注意：与 ChatGPT 订阅配额是两套计费，订阅用户请用上方「ChatGPT 订阅」卡片。"
   },
   {
+    "id": "opencode-go",
+    "name": "OpenCode Go 订阅",
+    "kind": "custom",
+    "provider_id": "opencode-go",
+    "base_url": "https://opencode.ai/zen/go/v1",
+    "default_model": "grok-4.6",
+    "models": ["grok-4.6", "gpt-5.6-luna", "muse-spark-1.2-contributor"],
+    "default_env_key": "OPENCODE_GO_API_KEY",
+    "query_params": null,
+    "notes": "OpenCode Zen 的 $10/月订阅，含多款开源编程模型（Grok 4.6 / GPT 5.6 Luna / Muse Spark 等）。在 opencode.ai 登录 Zen 订阅 Go 后复制 API key。仅列了走 /v1/responses 的模型（Codex 只支持 Responses 协议）。"
+  },
+  {
     "id": "azure-openai",
     "name": "Azure OpenAI",
     "kind": "custom",
