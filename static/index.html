@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Codex API Manager</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=1.1.1">
 </head>
 <body>
 <header id="topbar">
@@ -75,7 +75,7 @@
   </section>
 
   <!-- ============ Provider 管理 ============ -->
-  <section id="tab-providers" class="tab-view hidden">
+  <section id="tab-providers" class="tab-view">
     <h2>Provider 管理</h2>
     <div class="guide">
       <p>这里管理 config.toml 中的自定义供应商条目（model_providers）与全局设置。</p>
@@ -163,7 +163,7 @@
   </section>
 
   <!-- ============ 连接测试 ============ -->
-  <section id="tab-test" class="tab-view hidden">
+  <section id="tab-test" class="tab-view">
     <h2>连接测试</h2>
     <div class="guide">
       <p>验证某个 API 地址和 key 是否真的可用：发送一个最小 /responses 请求（判定标准），附带探测 /models 列出可用模型（失败不影响判定）。</p>
@@ -202,7 +202,7 @@
   </section>
 
   <!-- ============ 环境变量 ============ -->
-  <section id="tab-env" class="tab-view hidden">
+  <section id="tab-env" class="tab-view">
     <h2>环境变量</h2>
     <div class="guide">
       <p>管理 API key 等环境变量的存放位置（两种 scope 并存）：</p>
@@ -241,7 +241,7 @@
   </section>
 
   <!-- ============ 备份与恢复 ============ -->
-  <section id="tab-backup" class="tab-view hidden">
+  <section id="tab-backup" class="tab-view">
     <h2>备份与恢复</h2>
     <div class="guide">
       <p>每次「应用」模板、切换 provider、保存全局设置都会自动创建备份，方便回退。</p>
@@ -275,7 +275,7 @@
   </section>
 
   <!-- ============ 命令中心（1.1） ============ -->
-  <section id="tab-commands" class="tab-view hidden">
+  <section id="tab-commands" class="tab-view">
     <h2>命令中心</h2>
     <div class="guide">
       <p>计划把常用的 codex 命令直接搬到 GUI，无需再开终端。以下功能将在 <b>1.1 版本</b> 陆续提供，当前处于开发中。</p>
@@ -313,6 +313,6 @@
 </div>
 
 <div id="toast" class="toast hidden"></div>
-<script src="app.js"></script>
+<script src="app.js?v=1.1.1"></script>
 </body>
 </html>

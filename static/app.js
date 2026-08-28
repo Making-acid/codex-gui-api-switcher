@@ -6,6 +6,11 @@ const AUTH_TOKEN = new URLSearchParams(location.search).get("token") || "";
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
+const $id = (id) => document.getElementById(id);
+// 判空写入：元素不存在（旧缓存 HTML）时静默跳过，不中断渲染链
+const setText = (el, text) => { if (el) el.textContent = text; };
+const setHtml = (el, html) => { if (el) el.innerHTML = html; };
+const setVal = (el, val) => { if (el) el.value = val; };
 
 async function api(path, options = {}) {
   const opts = { method: options.method || "GET", headers: {} };
@@ -78,14 +83,15 @@ async function refreshAll() {
   STATE.defaults = defaults.defaults;
   STATE.env = env.env;
   STATE.baseline = baseline.baseline;
+  // 每个渲染独立 try/catch：单个页面报错不影响其余页面
   renderStatus();
   renderTemplateGrid();
-  renderProviders();
-  renderBackups();
-  renderDefaults();
-  renderEnv();
-  renderBaseline();
-  fillTestFromConfig();
+  try { renderProviders(); } catch (e) { console.error("renderProviders:", e); }
+  try { renderBackups(); } catch (e) { console.error("renderBackups:", e); }
+  try { renderDefaults(); } catch (e) { console.error("renderDefaults:", e); }
+  try { renderEnv(); } catch (e) { console.error("renderEnv:", e); }
+  try { renderBaseline(); } catch (e) { console.error("renderBaseline:", e); }
+  try { fillTestFromConfig(); } catch (e) { console.error("fillTestFromConfig:", e); }
 }
 
 function renderStatus() {
@@ -93,8 +99,8 @@ function renderStatus() {
   const ver = STATE.status ? `v${STATE.status.version}` : "";
   const tcount = STATE.status ? `${STATE.status.template_count} 模板` : "";
   const active = c.model_provider || (c.openai_base_url ? "openai (openai_base_url)" : "未设置");
-  $("#status-config").textContent =
-    `${ver} · ${tcount} ｜ config: ${c.path}${c.exists ? "" : "（不存在）"} ｜ 当前: ${active} ｜ 模型: ${c.model || "未设置"}`;
+  setText($id("status-config"),
+    `${ver} · ${tcount} ｜ config: ${c.path}${c.exists ? "" : "（不存在）"} ｜ 当前: ${active} ｜ 模型: ${c.model || "未设置"}`);
 }
 
 /* ---------------- Tab 切换 ---------------- */
@@ -102,7 +108,10 @@ function renderStatus() {
 $$(".tab").forEach((btn) => {
   btn.addEventListener("click", () => {
     $$(".tab").forEach((b) => b.classList.remove("active"));
-    $$(".tab-view").forEach((v) => v.classList.remove("active"));
+    $$(".tab-view").forEach((v) => {
+      v.classList.remove("active");
+      v.classList.remove("hidden");   // 兼容旧 HTML 的 hidden 类，避免 !important 压制显示
+    });
     btn.classList.add("active");
     $(`#tab-${btn.dataset.tab}`).classList.add("active");
   });
@@ -235,19 +244,19 @@ function renderProviders() {
   const ids = Object.keys(providers);
   const c = STATE.config;
 
-  // 顶部状态摘要
+  // 顶部状态摘要（元素不存在时静默跳过）
   const hasApiOverride = c.model_provider || c.openai_base_url || c.oss_provider || ids.length;
-  $("#p-active-mode").textContent = hasApiOverride
+  setText($id("p-active-mode"), hasApiOverride
     ? (c.model_provider || c.openai_base_url || c.oss_provider || "自定义")
-    : "ChatGPT 订阅（Codex 原生）";
-  $("#p-count").textContent = String(ids.length);
-  $("#p-model").textContent = c.model || "未设置";
+    : "ChatGPT 订阅（Codex 原生）");
+  setText($id("p-count"), String(ids.length));
+  setText($id("p-model"), c.model || "未设置");
   const detail = [];
   if (c.model_provider) detail.push(`当前生效 provider：<b>${esc(c.model_provider)}</b>`);
   if (c.openai_base_url) detail.push(`openai_base_url：<code>${esc(c.openai_base_url)}</code>`);
   if (c.oss_provider) detail.push(`本地模型 oss_provider：<b>${esc(c.oss_provider)}</b>`);
   if (!detail.length) detail.push("当前没有任何 API 覆盖，Codex 使用 ChatGPT 账号登录。");
-  $("#p-active-detail").innerHTML = detail.join(" ｜ ");
+  setHtml($id("p-active-detail"), detail.join(" ｜ "));
 
   if (!ids.length) {
     list.innerHTML = `
@@ -282,10 +291,10 @@ function renderProviders() {
   addBtn.addEventListener("click", () => editProvider(null));
   list.appendChild(addBtn);
 
-  $("#g-model").value = STATE.config.model || "";
-  $("#g-provider").value = STATE.config.model_provider || "";
-  $("#g-openai-url").value = STATE.config.openai_base_url || "";
-  $("#g-oss").value = STATE.config.oss_provider || "";
+  setVal($id("g-model"), STATE.config.model || "");
+  setVal($id("g-provider"), STATE.config.model_provider || "");
+  setVal($id("g-openai-url"), STATE.config.openai_base_url || "");
+  setVal($id("g-oss"), STATE.config.oss_provider || "");
 }
 
 let editingProviderId = null;
@@ -390,36 +399,36 @@ function fillTestFromConfig() {
   const pid = c.model_provider;
   const active = pid && c.model_providers ? c.model_providers[pid] : null;
 
-  // 顶部摘要
+  // 顶部摘要（元素不存在时静默跳过）
   if (!pid && !c.openai_base_url && !c.oss_provider) {
-    $("#t-provider").textContent = "ChatGPT 订阅";
-    $("#t-key-source").textContent = "无需 key";
+    setText($id("t-provider"), "ChatGPT 订阅");
+    setText($id("t-key-source"), "无需 key");
   } else if (pid && active) {
-    $("#t-provider").textContent = pid;
-    $("#t-key-source").textContent = active.env_key || "未指定 env_key";
+    setText($id("t-provider"), pid);
+    setText($id("t-key-source"), active.env_key || "未指定 env_key");
   } else if (c.openai_base_url) {
-    $("#t-provider").textContent = "openai_base_url";
-    $("#t-key-source").textContent = "OPENAI_API_KEY";
+    setText($id("t-provider"), "openai_base_url");
+    setText($id("t-key-source"), "OPENAI_API_KEY");
   } else if (c.oss_provider) {
-    $("#t-provider").textContent = c.oss_provider;
-    $("#t-key-source").textContent = "本地模型无需 key";
+    setText($id("t-provider"), c.oss_provider);
+    setText($id("t-key-source"), "本地模型无需 key");
   } else {
-    $("#t-provider").textContent = "未设置";
-    $("#t-key-source").textContent = "-";
+    setText($id("t-provider"), "未设置");
+    setText($id("t-key-source"), "-");
   }
-  $("#t-model").textContent = c.model || "未设置";
+  setText($id("t-model"), c.model || "未设置");
 
-  if (!c.model_provider && c.oss_provider && !$("#ct-url").value) {
-    $("#ct-url").value = c.oss_provider === "ollama" ? "http://localhost:11434/v1" : "http://localhost:1234/v1";
+  if (!c.model_provider && c.oss_provider && !$id("ct-url").value) {
+    $id("ct-url").value = c.oss_provider === "ollama" ? "http://localhost:11434/v1" : "http://localhost:1234/v1";
   }
-  if (pid && c.model_providers && c.model_providers[pid] && !$("#ct-url").value) {
-    $("#ct-url").value = c.model_providers[pid].base_url || "";
+  if (pid && c.model_providers && c.model_providers[pid] && !$id("ct-url").value) {
+    $id("ct-url").value = c.model_providers[pid].base_url || "";
   }
-  if (c.model && !$("#ct-model").value) $("#ct-model").value = c.model;
-  const empty = !$("#ct-url").value;
-  $("#t-test-tip").textContent = empty
+  if (c.model && !$id("ct-model").value) $id("ct-model").value = c.model;
+  const empty = !$id("ct-url").value;
+  setText($id("t-test-tip"), empty
     ? "当前没有任何生效的 API provider（ChatGPT 订阅模式无需测试）。先在「快速切换」应用一个模板，或在此手动填写地址测试。"
-    : "已预填当前生效配置。若测试失败，请检查 key 是否已设置、网络是否可达。";
+    : "已预填当前生效配置。若测试失败，请检查 key 是否已设置、网络是否可达。");
 }
 
 $("#ct-key-toggle").addEventListener("click", () => {
@@ -470,7 +479,7 @@ function renderEnv() {
   envDraft.file = STATE.env.file.map((e) => ({ name: e.name, _origName: e.name, value: e.masked, masked: true, real: e.value, dirty: false, deleted: false }));
   renderEnvRows("user");
   renderEnvRows("file");
-  $("#env-file-path").textContent = `(${esc(STATE.env.env_file)})`;
+  setText($id("env-file-path"), `(${esc(STATE.env.env_file)})`);
   // 高亮当前模板使用的 env_key
   const keys = [];
   const c = STATE.config;
@@ -479,31 +488,30 @@ function renderEnv() {
   (Object.values(c.model_providers || {})).forEach((p) => {
     if (p.env_key && !keys.includes(p.env_key)) keys.push(p.env_key);
   });
-  const el = $("#env-active-keys");
-  if (keys.length) {
-    el.textContent = `当前配置用到的 key 变量：${keys.join("、")}（确保已在此页设置）`;
-  } else {
-    el.textContent = "当前为 ChatGPT 订阅模式或未配置 key 类 provider，无需设置环境变量。";
-  }
+  setText($id("env-active-keys"), keys.length
+    ? `当前配置用到的 key 变量：${keys.join("、")}（确保已在此页设置）`
+    : "当前为 ChatGPT 订阅模式或未配置 key 类 provider，无需设置环境变量。");
   // 顶部 key 摘要
   const userNames = new Set((STATE.env.user || []).map((e) => e.name));
   const fileNames = new Set((STATE.env.file || []).map((e) => e.name));
-  const summary = $("#env-key-summary");
-  summary.innerHTML = "";
-  if (!keys.length) {
-    summary.innerHTML = '<p class="hint">当前没有需要手动设置的 API key。</p>';
-  } else {
-    keys.forEach((k) => {
-      const inUser = userNames.has(k);
-      const inFile = fileNames.has(k);
-      const tag = inUser
-        ? '<span class="tag ok">用户变量已设置</span>'
-        : inFile
-          ? '<span class="tag warn">仅在 .env</span>'
-          : '<span class="tag">未设置</span>';
-      summary.insertAdjacentHTML("beforeend",
-        `<div class="key-item"><code>${esc(k)}</code> ${tag}<span class="hint">${inUser ? "Codex Desktop 可以读取" : "Desktop 读不到这个 key"}</span></div>`);
-    });
+  const summary = $id("env-key-summary");
+  if (summary) {
+    summary.innerHTML = "";
+    if (!keys.length) {
+      summary.innerHTML = '<p class="hint">当前没有需要手动设置的 API key。</p>';
+    } else {
+      keys.forEach((k) => {
+        const inUser = userNames.has(k);
+        const inFile = fileNames.has(k);
+        const tag = inUser
+          ? '<span class="tag ok">用户变量已设置</span>'
+          : inFile
+            ? '<span class="tag warn">仅在 .env</span>'
+            : '<span class="tag">未设置</span>';
+        summary.insertAdjacentHTML("beforeend",
+          `<div class="key-item"><code>${esc(k)}</code> ${tag}<span class="hint">${inUser ? "Codex Desktop 可以读取" : "Desktop 读不到这个 key"}</span></div>`);
+      });
+    }
   }
   STATE.activeEnvKeys = keys;
 }
