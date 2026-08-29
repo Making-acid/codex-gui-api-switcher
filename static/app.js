@@ -476,7 +476,7 @@ let envDraft = { user: [], file: [] };
 
 function renderEnv() {
   envDraft.user = (STATE.env.user || []).map((e) => ({ name: e.name, _origName: e.name, value: e.masked, masked: true, real: null, dirty: false, deleted: false }));
-  envDraft.file = STATE.env.file.map((e) => ({ name: e.name, _origName: e.name, value: e.masked, masked: true, real: e.value, dirty: false, deleted: false }));
+  envDraft.file = STATE.env.file.map((e) => ({ name: e.name, _origName: e.name, value: e.masked, masked: true, real: null, dirty: false, deleted: false }));
   renderEnvRows("user");
   renderEnvRows("file");
   setText($id("env-file-path"), `(${esc(STATE.env.env_file)})`);

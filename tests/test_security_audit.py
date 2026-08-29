@@ -13,6 +13,7 @@ from waitress import serve
 from core.backups import BackupManager, now_ts
 from core.config_manager import ConfigManager, ConfigError, _to_toml
 from core.connectivity import smoke_test, probe_models, _endpoint
+from core.env_manager import EnvManager
 from server import create_app
 
 
@@ -180,6 +181,85 @@ class EnvDirtyLogicTest(unittest.TestCase):
         for e in r.json()["env"]["user"]:
             self.assertIn("masked", e)
             self.assertNotIn("value", e)
+
+
+class FailingEnvStub(StubEnvManager):
+    def write_user_env(self, entries):
+        raise RuntimeError("registry boom")
+
+
+class ApplyRollbackTest(unittest.TestCase):
+    """env 写入失败时只回滚本次模板更改，不影响历史覆盖。"""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        self.cfg = self.root / "config.toml"
+        self.cfg.write_text('model = "m1"\n', encoding="utf-8")
+        self.mgr = ConfigManager(config_path=self.cfg, data_dir=self.root / "data")
+        self.base = start_server(self.mgr, env_manager=FailingEnvStub())
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_env_failure_rolls_back_only_current_op(self):
+        # 先成功写入一次历史覆盖（不写 env）
+        r = requests.post(self.base + "/api/templates/apply",
+                          json={"template_id": "openai"}, timeout=5)
+        self.assertEqual(r.status_code, 200)
+        text_after_first = self.cfg.read_text(encoding="utf-8")
+        overrides_after_first = self.mgr.get_overrides()
+
+        # 第二个模板需要 env key → 写入失败 → 必须精确回滚
+        r = requests.post(self.base + "/api/templates/apply",
+                          json={"template_id": "groq", "api_key": "sk-x"},
+                          timeout=5)
+        self.assertEqual(r.status_code, 500)
+        self.assertIn("回滚", r.json()["message"])
+        # 回到第一次成功应用后的状态，而不是初始状态
+        self.assertEqual(self.cfg.read_text(encoding="utf-8"), text_after_first)
+        self.assertEqual(self.mgr.get_overrides(), overrides_after_first)
+
+
+class FileEnvMaskingTest(unittest.TestCase):
+    def test_file_scope_no_plaintext(self):
+        tmp = tempfile.TemporaryDirectory()
+        root = Path(tmp.name)
+        cfg = root / "config.toml"
+        cfg.write_text("", encoding="utf-8")
+        mgr = ConfigManager(config_path=cfg, data_dir=root / "data")
+        env = EnvManager(env_file=root / ".env")
+        env.write_env_file([{"name": "K", "value": "sk-supersecret123"}])
+        base = start_server(mgr, env_manager=env)
+        try:
+            r = requests.get(base + "/api/env?scope=file", timeout=5)
+            body = r.json()
+            entries = body["env"]["file"]
+            self.assertTrue(entries)
+            for e in entries:
+                self.assertNotIn("value", e)
+            self.assertNotIn("sk-supersecret123", r.text)
+        finally:
+            tmp.cleanup()
+
+
+class DefaultIdUniquenessTest(unittest.TestCase):
+    def test_same_second_saves_get_distinct_ids(self):
+        tmp = tempfile.TemporaryDirectory()
+        root = Path(tmp.name)
+        cfg = root / "config.toml"
+        cfg.write_text('model = "m1"\n', encoding="utf-8")
+        mgr = ConfigManager(config_path=cfg, data_dir=root / "data")
+        base = start_server(mgr, env_manager=StubEnvManager())
+        try:
+            ids = set()
+            for _ in range(3):
+                r = requests.post(base + "/api/defaults/save-as-mine",
+                                  json={"name": "n"}, timeout=5)
+                ids.add(r.json()["default"]["id"])
+            self.assertEqual(len(ids), 3)
+        finally:
+            tmp.cleanup()
 
 
 class ConnectivityEndpointTest(unittest.TestCase):

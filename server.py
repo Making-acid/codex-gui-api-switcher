@@ -184,11 +184,12 @@ def create_app(config_manager: ConfigManager | None = None,
 
         with state_lock:
             _auto_backup(f"应用模板 {template_id}")
+            snapshot = mgr.snapshot()
             try:
                 result = mgr.write(api_config)
             except ConfigError as exc:
                 return _err(str(exc), 400)
-            # 顺序：config 成功后才写 env；env 失败则回滚 config，避免残留
+            # 顺序：config 成功后才写 env；env 失败则回滚本次 config，避免残留
             if api_key and env_key:
                 try:
                     if env_scope == "file":
@@ -197,7 +198,7 @@ def create_app(config_manager: ConfigManager | None = None,
                         env.write_user_env([{"name": env_key, "value": api_key}])
                 except Exception as exc:
                     try:
-                        mgr.restore_overrides()
+                        mgr.rollback(snapshot)
                     except ConfigError:
                         pass
                     return _err(f"写入环境变量失败，已回滚本次配置更改: {exc}", 500)
@@ -254,7 +255,9 @@ def create_app(config_manager: ConfigManager | None = None,
                 return _err(f"读取用户环境变量失败: {exc}", 500)
             out["user"] = [{"name": n, "masked": _mask(n, v)} for n, v in values.items()]
         if scope in ("file", "all"):
-            out["file"] = env.read_env_file()
+            # 与 user scope 一致：只回传脱敏值，明文不出后端
+            out["file"] = [{"name": e["name"], "masked": e["masked"]}
+                           for e in env.read_env_file()]
         return jsonify({"ok": True, "env": out, "env_file": str(env.env_file)})
 
     @app.put("/api/env")
@@ -396,7 +399,7 @@ def create_app(config_manager: ConfigManager | None = None,
                               "experimental_bearer_token", "http_headers"):
                 spec.pop(sensitive, None)
         entry = {
-            "id": datetime.now().strftime("%Y%m%d-%H%M%S"),
+            "id": datetime.now().strftime("%Y%m%d-%H%M%S") + "-" + secrets.token_hex(3),
             "name": name,
             "saved_at": utcnow_iso(),
             "config": cfg,

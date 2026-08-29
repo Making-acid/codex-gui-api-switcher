@@ -48,6 +48,24 @@ class EnvFileTest(unittest.TestCase):
         entries = self.mgr.read_env_file()
         self.assertEqual([e["name"] for e in entries], ["A", "B"])
 
+    def test_newline_roundtrip(self):
+        self.mgr.write_env_file([{"name": "PEM", "value": "line1\nline2\r\n"}])
+        entries = {e["name"]: e["value"] for e in self.mgr.read_env_file()}
+        self.assertEqual(entries["PEM"], "line1\nline2\r\n")
+        # 落盘必须是单行（转义后）
+        self.assertEqual(len(self.env_file.read_text(encoding="utf-8").splitlines()), 1)
+
+    def test_special_chars_roundtrip(self):
+        vals = {
+            "A": 'has "quotes"',
+            "B": "back\\slash",
+            "C": "tab\there",
+            "D": "$dollar`tick#",
+        }
+        self.mgr.write_env_file([{"name": k, "value": v} for k, v in vals.items()])
+        entries = {e["name"]: e["value"] for e in self.mgr.read_env_file()}
+        self.assertEqual(entries, vals)
+
 
 class MaskTest(unittest.TestCase):
     def test_mask(self):

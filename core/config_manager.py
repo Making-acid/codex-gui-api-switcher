@@ -183,6 +183,27 @@ class ConfigManager:
         return self.write({"model_providers": {provider_id: None}})
 
     # ------------------------------------------------------------------
+    # 操作级快照 / 回滚（失败事务用，不影响历史覆盖记录）
+    # ------------------------------------------------------------------
+
+    def snapshot(self) -> dict:
+        """捕获当前 config.toml 原文 + 覆盖文件内容，供 rollback() 字节级还原。
+
+        用于失败事务回滚：只撤销本次操作，不影响更早操作留下的覆盖记录。
+        """
+        with self._lock:
+            return {"raw": self.read_raw(), "overrides": self.get_overrides()}
+
+    def rollback(self, snap: dict) -> dict:
+        """恢复到 snapshot() 时刻的精确状态（config 原文 + 覆盖记录）。"""
+        with self._lock:
+            if not self.exists():
+                raise ConfigError(f"配置文件不存在，无法回滚: {self.config_path}")
+            self._atomic_write(snap["raw"])
+            self._save_overrides(snap["overrides"])
+            return {"ok": True, "rolled_back": True}
+
+    # ------------------------------------------------------------------
     # 覆盖追踪 / 恢复默认
     # ------------------------------------------------------------------
 

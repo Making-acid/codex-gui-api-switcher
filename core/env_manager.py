@@ -38,11 +38,33 @@ def mask_secret(value: str, keep_tail: int = 4) -> str:
 
 
 def _quote_env_value(value: str) -> str:
-    """.env 值含特殊字符时用双引号包裹，避免破坏解析。"""
-    if value and not any(c in value for c in " \t\"'#$`\\"):
+    """.env 值含特殊字符时用双引号包裹；换行等转义为 \n/\r，保证单行可回读。"""
+    if value and not any(c in value for c in " \t\"'#$`\\\n\r"):
         return value
-    escaped = value.replace("\\", "\\\\").replace('"', '\\"')
+    escaped = (value.replace("\\", "\\\\").replace('"', '\\"')
+               .replace("\n", "\\n").replace("\r", "\\r"))
     return f'"{escaped}"'
+
+
+def _unquote_env_value(raw: str) -> str:
+    """解析 read_env_file 读到的值：还原 _quote_env_value 的转义。"""
+    if len(raw) >= 2 and raw[0] == '"' and raw[-1] == '"':
+        inner = raw[1:-1]
+        mapping = {"n": "\n", "r": "\r", "\\": "\\", '"': '"'}
+        out = []
+        i = 0
+        while i < len(inner):
+            c = inner[i]
+            if c == "\\" and i + 1 < len(inner) and inner[i + 1] in mapping:
+                out.append(mapping[inner[i + 1]])
+                i += 2
+                continue
+            out.append(c)
+            i += 1
+        return "".join(out)
+    if len(raw) >= 2 and raw[0] == "'" and raw[-1] == "'":
+        return raw[1:-1]
+    return raw
 
 
 class EnvManager:
@@ -114,10 +136,11 @@ class EnvManager:
             name = name.strip()
             if not name:
                 continue
+            value = _unquote_env_value(value.strip())
             out.append({
                 "name": name,
-                "value": value.strip().strip('"').strip("'"),
-                "masked": mask_secret(value.strip().strip('"').strip("'")),
+                "value": value,
+                "masked": mask_secret(value),
             })
         return out
 

@@ -159,6 +159,42 @@ class ConfigManagerTest(unittest.TestCase):
         self.assertEqual(p["http_headers"], {"X-Test": "1"})
         self.assertFalse(p["requires_openai_auth"])
 
+    def test_snapshot_rollback_restores_exact_state(self):
+        # 历史覆盖（第一次 write）必须原样保留，rollback 只撤销本次操作
+        self.mgr.write({"model_provider": "old"})
+        overrides_before = self.mgr.get_overrides()
+        text_before = self.cfg.read_text(encoding="utf-8")
+
+        snap = self.mgr.snapshot()
+        self.mgr.write({
+            "model": "new-model",
+            "model_provider": "pnew",
+            "model_providers": {"pnew": {"name": "P", "base_url": "https://u/v1",
+                                         "wire_api": "responses"}},
+        })
+        self.mgr.rollback(snap)
+
+        self.assertEqual(self.cfg.read_text(encoding="utf-8"), text_before)
+        self.assertEqual(self.mgr.get_overrides(), overrides_before)
+
+    def test_rollback_removes_key_created_by_failed_op(self):
+        snap = self.mgr.snapshot()
+        self.mgr.write({"model_provider": "gone", "model_providers": {"gone": {
+            "name": "G", "base_url": "u"}}})
+        self.mgr.rollback(snap)
+        cfg = self.mgr.read_api_config()
+        self.assertIsNone(cfg["model_provider"])
+        self.assertEqual(cfg["model_providers"], {})
+        self.assertEqual(self.mgr.get_overrides(), [])
+
+    def test_rollback_keeps_unrelated_sections(self):
+        snap = self.mgr.snapshot()
+        self.mgr.write({"model": "x", "service_tier": "fast"})
+        self.mgr.rollback(snap)
+        raw = self.cfg.read_text(encoding="utf-8")
+        self.assertIn("mcp_servers.node_repl", raw)
+        self.assertIn("sansFontSize", raw)
+
 
 if __name__ == "__main__":
     unittest.main()
