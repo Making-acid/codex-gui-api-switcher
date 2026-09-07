@@ -16,7 +16,7 @@ from flask import Flask, jsonify, request, send_from_directory
 
 from core.backups import BackupError, BackupManager
 from core.config_manager import ConfigManager, ConfigError
-from core.connectivity import test_connection
+from core.connectivity import probe_models, test_connection
 from core.env_manager import EnvError, EnvManager
 from core.providers import (
     CHATGPT_CLEAR_MARKER,
@@ -237,6 +237,23 @@ def create_app(config_manager: ConfigManager | None = None,
             headers=body.get("headers"),
             query_params=body.get("query_params"),
             timeout=body.get("timeout", 20),
+        )
+        return jsonify({"ok": True, **result})
+
+    @app.post("/api/models")
+    def list_models():
+        body = request.get_json(silent=True) or {}
+        base_url = body.get("base_url")
+        if not base_url:
+            return _err("需要 base_url")
+        if urlparse(base_url).scheme not in ("http", "https"):
+            return _err("仅支持 http/https 地址")
+        result = probe_models(
+            base_url,
+            body.get("api_key"),
+            headers=body.get("headers"),
+            query_params=body.get("query_params"),
+            timeout=body.get("timeout", 15),
         )
         return jsonify({"ok": True, **result})
 

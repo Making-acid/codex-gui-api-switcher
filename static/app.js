@@ -187,11 +187,60 @@ function selectTemplate(t) {
     $("#qf-key-row").classList.toggle("hidden", t.kind === "oss");
     $("#qf-key").value = "";
     $("#qf-scope-row").classList.toggle("hidden", t.kind === "oss");
+
+    setText($id("qf-models-status"), "");
+    if (t.base_url) refreshQfModels({ silent: true });
   }
 
   $("#qf-result").classList.add("hidden");
   $("#quick-form").scrollIntoView({ behavior: "smooth" });
 }
+
+function mergeQfModels(models) {
+  const datalist = $id("qf-models");
+  const existing = new Set([...datalist.querySelectorAll("option")].map((o) => o.value));
+  models.forEach((m) => {
+    if (m && !existing.has(m)) {
+      const opt = document.createElement("option");
+      opt.value = m;
+      datalist.appendChild(opt);
+      existing.add(m);
+    }
+  });
+}
+
+async function refreshQfModels({ silent = false } = {}) {
+  const t = STATE.currentTemplate;
+  if (!t || t.kind === "chatgpt") return;
+  const urlRowHidden = $("#qf-url-row").classList.contains("hidden");
+  const baseUrl = ($("#qf-url").value || t.base_url || "").trim();
+  if (!baseUrl) {
+    setText($id("qf-models-status"), "需填写 Base URL 后才能拉取模型");
+    return;
+  }
+  const btn = $id("qf-models-refresh");
+  if (btn) btn.disabled = true;
+  setText($id("qf-models-status"), "拉取中…");
+  try {
+    const res = await api("/api/models", {
+      method: "POST",
+      body: { base_url: baseUrl, api_key: $("#qf-key").value.trim() || null },
+    });
+    if (res.models && res.models.length) {
+      mergeQfModels(res.models);
+      setText($id("qf-models-status"), `已加载 ${res.models.length} 个模型`);
+    } else {
+      setText($id("qf-models-status"), res.error || "未返回模型（仍可用内置列表）");
+    }
+  } catch (err) {
+    if (!silent) toast(err.message, "err");
+    setText($id("qf-models-status"), "拉取失败（仍可用内置列表）");
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+$("#qf-models-refresh").addEventListener("click", () => refreshQfModels());
 
 $("#qf-key-toggle").addEventListener("click", () => {
   const el = $("#qf-key");

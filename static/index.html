@@ -44,6 +44,8 @@
         <label>模型</label>
         <input id="qf-model" list="qf-models" placeholder="模型 ID">
         <datalist id="qf-models"></datalist>
+        <button type="button" class="ghost" id="qf-models-refresh">拉取模型</button>
+        <span id="qf-models-status" class="hint"></span>
       </div>
       <div class="form-row hidden" id="qf-provider-row">
         <label>Provider 名称</label>
@@ -296,6 +298,6 @@
 </div>
 
 <div id="toast" class="toast hidden"></div>
-<script src="app.js?v=1.1.1"></script>
+<script src="app.js?v=1.1.2"></script>
 </body>
 </html>

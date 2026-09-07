@@ -272,6 +272,60 @@ class ConnectivityEndpointTest(unittest.TestCase):
                          "https://a/v1/models")
 
 
+class ModelsEndpointTest(unittest.TestCase):
+    """/api/models：动态拉取供应商模型清单。"""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        self.cfg = self.root / "config.toml"
+        self.cfg.write_text('model = "m1"\n', encoding="utf-8")
+        self.mgr = ConfigManager(config_path=self.cfg, data_dir=self.root / "data")
+        self.base = start_server(self.mgr, env_manager=StubEnvManager())
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_scheme_whitelist(self):
+        r = requests.post(self.base + "/api/models", json={"base_url": "file:///C:/etc"},
+                          timeout=5)
+        self.assertEqual(r.status_code, 400)
+
+    def test_missing_base_url(self):
+        r = requests.post(self.base + "/api/models", json={}, timeout=5)
+        self.assertEqual(r.status_code, 400)
+
+    def test_fetch_models(self):
+        import json as _json
+        from http.server import BaseHTTPRequestHandler, HTTPServer
+
+        class Handler(BaseHTTPRequestHandler):
+            def log_message(self, *a):
+                pass
+
+            def do_GET(self):
+                body = _json.dumps({"data": [{"id": "m1"}, {"id": "m2"}]}).encode()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+        srv = HTTPServer(("127.0.0.1", 0), Handler)
+        t = threading.Thread(target=srv.serve_forever, daemon=True)
+        t.start()
+        try:
+            port = srv.server_address[1]
+            r = requests.post(self.base + "/api/models",
+                              json={"base_url": f"http://127.0.0.1:{port}/v1"},
+                              timeout=5)
+            body = r.json()
+            self.assertTrue(body["ok"])
+            self.assertEqual(body["models"], ["m1", "m2"])
+        finally:
+            srv.shutdown()
+
+
 class AtomicWriteTest(unittest.TestCase):
     def test_atomic_write_preserves_file(self):
         import os
