@@ -35,7 +35,7 @@ API_KEYS = (
 )
 
 # 允许透传编辑的额外顶层键（非 API 必需，但常见于切换场景）
-EXTRA_KEYS = ("model_reasoning_effort", "service_tier")
+EXTRA_KEYS = ("model_reasoning_effort", "service_tier", "model_context_window")
 
 DEFAULT_CONFIG_PATH = Path(os.environ.get("CODEX_HOME", "~")).expanduser() / ".codex" / "config.toml"
 DEFAULT_DATA_DIR = Path(os.environ.get("CODEX_HOME", "~")).expanduser() / ".codex" / "codex-api-manager"

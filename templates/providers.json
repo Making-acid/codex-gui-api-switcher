@@ -96,6 +96,43 @@
     "notes": "智谱 GLM Coding Plan 官方 OpenAI Response 协议端点（需编程套餐 Key）。国际站: https://api.z.ai/api/v1。按量付费端点 /api/paas/v4 仅 Chat 协议、不支持 Codex。"
   },
   {
+    "id": "deepseek",
+    "name": "DeepSeek 官方",
+    "kind": "custom",
+    "provider_id": "deepseek",
+    "base_url": "https://api.deepseek.com",
+    "default_model": "deepseek-flash",
+    "models": ["deepseek-flash", "deepseek-v4-pro"],
+    "default_env_key": "DEEPSEEK_API_KEY",
+    "query_params": null,
+    "notes": "DeepSeek 官方直连，原生 Responses API（官方为 Codex 专门适配，base_url 不带 /v1）。deepseek-flash 高性价比且支持图片输入；deepseek-v4-pro 为旗舰推理模型。"
+  },
+  {
+    "id": "kimi",
+    "name": "Kimi（Moonshot 官方）",
+    "kind": "custom",
+    "provider_id": "kimi",
+    "base_url": "https://api.moonshot.cn/v1",
+    "default_model": "kimi-k3",
+    "models": ["kimi-k3", "kimi-k2.7-code", "kimi-k2.6"],
+    "default_env_key": "KIMI_API_KEY",
+    "query_params": null,
+    "extra_config": {"model_context_window": 1048576},
+    "notes": "月之暗面 Kimi 官方直连，原生 Responses API（官方提供 Codex 接入指南）。kimi-k3 为 1M 上下文旗舰，已自动写入 model_context_window=1048576（官方推荐）；若改用 256K 的 k2.7-code / k2.6 可在 Provider 管理里删掉该键。"
+  },
+  {
+    "id": "minimax",
+    "name": "MiniMax 官方",
+    "kind": "custom",
+    "provider_id": "minimax",
+    "base_url": "https://api.minimax.cn/v1",
+    "default_model": "MiniMax-M3",
+    "models": ["MiniMax-M3", "MiniMax-M2.7", "MiniMax-M2.5"],
+    "default_env_key": "MINIMAX_API_KEY",
+    "query_params": null,
+    "notes": "MiniMax 官方直连，原生 Responses API（/v1/responses）。国际站: https://api.minimax.io/v1。"
+  },
+  {
     "id": "tokenhub",
     "name": "腾讯云 TokenHub（国产模型）",
     "kind": "custom",

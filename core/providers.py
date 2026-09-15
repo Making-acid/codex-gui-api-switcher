@@ -60,12 +60,14 @@ def build_apply_config(template_id: str, model: str | None = None,
     kind = t["kind"]
     model = model or t.get("default_model")
     env_key = t.get("default_env_key")
+    extra = t.get("extra_config") or {}
 
     if kind == KIND_OSS:
         oss_id = t.get("oss_id") or template_id
         config = {"oss_provider": oss_id}
         if model:
             config["model"] = model
+        config.update(extra)
         return {"config": config, "env_key": env_key}
 
     if kind == KIND_BUILTIN:
@@ -73,6 +75,7 @@ def build_apply_config(template_id: str, model: str | None = None,
         config = {"model_provider": pid}
         if model:
             config["model"] = model
+        config.update(extra)
         return {"config": config, "env_key": env_key}
 
     if kind == KIND_CUSTOM:
@@ -100,6 +103,7 @@ def build_apply_config(template_id: str, model: str | None = None,
         }
         if model:
             config["model"] = model
+        config.update(extra)
         return {"config": config, "env_key": env_key}
 
     if kind == KIND_CHATGPT:
