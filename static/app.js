@@ -188,8 +188,11 @@ function selectTemplate(t) {
     $("#qf-key").value = "";
     $("#qf-scope-row").classList.toggle("hidden", t.kind === "oss");
 
-    setText($id("qf-models-status"), "");
-    if (t.base_url) refreshQfModels({ silent: true });
+    setText($id("qf-models-status"), t.models && t.models.length
+      ? `内置 ${t.models.length} 个 Codex 兼容（Responses）模型`
+      : "");
+    const keyReady = t.kind === "oss" || !!$("#qf-key").value.trim();
+    if (t.base_url && keyReady) refreshQfModels({ silent: true });
   }
 
   $("#qf-result").classList.add("hidden");
@@ -228,17 +231,19 @@ async function refreshQfModels({ silent = false } = {}) {
         base_url: baseUrl,
         api_key: $("#qf-key").value.trim() || null,
         query_params: t.query_params || null,
+        timeout: 30,
       },
     });
     if (res.models && res.models.length) {
       mergeQfModels(res.models);
       setText($id("qf-models-status"), `已加载 ${res.models.length} 个实时模型（平台全量，部分可能仅支持 Chat）`);
     } else {
-      setText($id("qf-models-status"), res.error || "未返回模型（仍可用内置列表）");
+      const err = (res.error || "未返回模型").slice(0, 90);
+      setText($id("qf-models-status"), `拉取失败：${err}（仍可用内置列表）`);
     }
   } catch (err) {
     if (!silent) toast(err.message, "err");
-    setText($id("qf-models-status"), "拉取失败（仍可用内置列表）");
+    setText($id("qf-models-status"), `拉取失败：${String(err.message || "网络错误").slice(0, 90)}（仍可用内置列表）`);
   } finally {
     if (btn) btn.disabled = false;
   }

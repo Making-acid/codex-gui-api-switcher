@@ -18,7 +18,7 @@
     "provider_id": "openai-custom",
     "base_url": "https://api.openai.com/v1",
     "default_model": "gpt-5.6-sol",
-    "models": ["gpt-6-astra", "gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna", "gpt-5.6", "gpt-5.5", "gpt-5.5-pro", "gpt-5.4", "gpt-5.3-codex", "gpt-5.3-codex-spark", "gpt-5.2-codex", "gpt-5.2", "gpt-5.1-codex-max", "gpt-5.1", "gpt-4.1"],
+    "models": ["gpt-6-astra", "gpt-5.6-sol", "gpt-5.6-sol-pro", "gpt-5.6-terra", "gpt-5.6-terra-pro", "gpt-5.6-luna", "gpt-5.6-luna-pro", "gpt-5.6", "gpt-5.5", "gpt-5.5-pro", "gpt-5.4", "gpt-5.3-codex", "gpt-5.3-codex-spark", "gpt-5.2-codex", "gpt-5.2", "gpt-5.1-codex-max", "gpt-5.1", "gpt-5-codex", "o3", "o3-pro", "o4-mini", "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-oss-120b", "gpt-oss-20b"],
     "default_env_key": "OPENAI_API_KEY",
     "query_params": null,
     "notes": "OpenAI 官方 API（按 token 计费）。gpt-6-astra 为最新旗舰，gpt-5.3-codex 为编程特化，gpt-5.6 裸 ID 是家族别名（推荐用 sol/terra/luna）。注意：与 ChatGPT 订阅配额是两套计费，订阅用户请用上方「ChatGPT 订阅」卡片。"
@@ -42,7 +42,7 @@
     "provider_id": "azure-openai",
     "base_url": null,
     "default_model": "gpt-5.6-sol",
-    "models": ["gpt-6-astra", "gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna", "gpt-5.5", "gpt-5.4", "gpt-5.4-pro", "gpt-5.4-mini", "gpt-5.3-codex", "gpt-5.2-codex", "gpt-5.2", "gpt-5.1-codex-max", "gpt-5.1", "gpt-4.1", "o4-mini"],
+    "models": ["gpt-6-astra", "gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna", "gpt-5.5", "gpt-5.4", "gpt-5.4-pro", "gpt-5.4-mini", "gpt-5.3-codex", "gpt-5.2-codex", "gpt-5.2", "gpt-5.1-codex-max", "gpt-5.1", "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "o3", "o4-mini"],
     "default_env_key": "AZURE_OPENAI_API_KEY",
     "query_params": {"api-version": "2025-06-01-preview"},
     "notes": "填入你的 Azure 部署端点（形如 https://<resource>.openai.azure.com/openai/v1）。注意：Azure 没有裸 gpt-5.6（用 sol/terra/luna），gpt-oss 系列仅 Chat 不支持 Responses。api-version 可在高级选项中修改。"
@@ -102,10 +102,10 @@
     "provider_id": "deepseek",
     "base_url": "https://api.deepseek.com",
     "default_model": "deepseek-flash",
-    "models": ["deepseek-flash", "deepseek-v4-pro"],
+    "models": ["deepseek-flash", "deepseek-v4-pro", "deepseek-v4-flash", "deepseek-v4-flash-vision-exp"],
     "default_env_key": "DEEPSEEK_API_KEY",
     "query_params": null,
-    "notes": "DeepSeek 官方直连，原生 Responses API（官方为 Codex 专门适配，base_url 不带 /v1）。deepseek-flash 高性价比且支持图片输入；deepseek-v4-pro 为旗舰推理模型。"
+    "notes": "DeepSeek 官方直连，原生 Responses API（官方为 Codex 专门适配，base_url 不带 /v1）。deepseek-flash 高性价比且支持图片输入；deepseek-v4-pro 为旗舰推理模型；deepseek-v4-flash / -vision-exp 为 legacy 名（仍接受，实际由 V4.1-Flash 服务）。"
   },
   {
     "id": "kimi",
@@ -127,7 +127,7 @@
     "provider_id": "minimax",
     "base_url": "https://api.minimax.cn/v1",
     "default_model": "MiniMax-M3",
-    "models": ["MiniMax-M3", "MiniMax-M2.7", "MiniMax-M2.7-highspeed", "MiniMax-M2.5", "MiniMax-M2.5-highspeed", "MiniMax-M2.1"],
+    "models": ["MiniMax-M3", "MiniMax-M2.7", "MiniMax-M2.7-highspeed", "MiniMax-M2.5", "MiniMax-M2.5-highspeed", "MiniMax-M2.1", "MiniMax-M2"],
     "default_env_key": "MINIMAX_API_KEY",
     "query_params": null,
     "notes": "MiniMax 官方直连，原生 Responses API（/v1/responses，M2.x 系列兼容）。国际站: https://api.minimax.io/v1。"

@@ -30,6 +30,7 @@
     <div class="guide">
       <p>这里是主要入口：选供应商卡片 → 选模型 → 填 API key → 点「应用」。切换前会自动备份，随时可回退。</p>
       <p>「ChatGPT 订阅」= 用你的 ChatGPT 账号登录（Plus/Pro 订阅配额），是 Codex 原生默认模式；其余卡片 = 第三方/API 计费模式。</p>
+      <p>模型下拉只收录该平台 <b>Codex 兼容（Responses 协议）</b>的模型，所以部分卡片数量较少（如 Kimi 仅 kimi-k3）；填好 Key 后点「拉取模型」可获取平台完整清单（含仅支持 Chat 的模型，Codex 用不了）。</p>
     </div>
     <div class="actions quick-actions">
       <button id="qa-baseline" class="danger">重置为 Codex 原始状态</button>
@@ -298,6 +299,6 @@
 </div>
 
 <div id="toast" class="toast hidden"></div>
-<script src="app.js?v=1.1.3"></script>
+<script src="app.js?v=1.1.4"></script>
 </body>
 </html>
