@@ -197,7 +197,12 @@ function selectTemplate(t) {
       opt.label = `${m}（仅 Chat，Codex 不可用）`;
       datalist.appendChild(opt);
     });
-    $("#qf-model").value = t.default_model || "";
+    // 不预填模型：浏览器会按输入框文字过滤 datalist，预填会导致下拉只剩一条
+    // 留空则应用时使用卡片默认模型（见 qf-apply 的 t.default_model 回退）
+    $("#qf-model").value = "";
+    $("#qf-model").placeholder = t.default_model
+      ? `默认：${t.default_model}（点下拉选其他模型）`
+      : "模型 ID（可直接手动输入）";
 
     $("#qf-provider-row").classList.toggle("hidden", !(t.kind === "custom" && !t.provider_id));
     $("#qf-provider").value = t.provider_id || "my-provider";
@@ -211,7 +216,9 @@ function selectTemplate(t) {
 
     const chatCount = chatOnly.length;
     if (t.models && t.models.length) {
-      let status = `可用 ${t.models.length} 个 Responses 模型，也可直接手动输入模型 ID`;
+      let status = `可用 ${t.models.length} 个 Responses 模型`;
+      if (t.default_model) status += `，默认 ${t.default_model}`;
+      status += "；可直接手动输入模型 ID";
       if (chatCount) status += `；下拉另含 ${chatCount} 个仅 Chat 模型（已标注不可用）`;
       setText($id("qf-models-status"), status);
     } else {
