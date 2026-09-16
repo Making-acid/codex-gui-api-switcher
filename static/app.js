@@ -224,11 +224,15 @@ async function refreshQfModels({ silent = false } = {}) {
   try {
     const res = await api("/api/models", {
       method: "POST",
-      body: { base_url: baseUrl, api_key: $("#qf-key").value.trim() || null },
+      body: {
+        base_url: baseUrl,
+        api_key: $("#qf-key").value.trim() || null,
+        query_params: t.query_params || null,
+      },
     });
     if (res.models && res.models.length) {
       mergeQfModels(res.models);
-      setText($id("qf-models-status"), `已加载 ${res.models.length} 个模型`);
+      setText($id("qf-models-status"), `已加载 ${res.models.length} 个实时模型（平台全量，部分可能仅支持 Chat）`);
     } else {
       setText($id("qf-models-status"), res.error || "未返回模型（仍可用内置列表）");
     }

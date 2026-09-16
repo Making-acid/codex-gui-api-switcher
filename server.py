@@ -255,6 +255,9 @@ def create_app(config_manager: ConfigManager | None = None,
             query_params=body.get("query_params"),
             timeout=body.get("timeout", 15),
         )
+        # 前端模型下拉语境：去掉连通测试专用的"不影响连通判定"字样
+        if result.get("error"):
+            result["error"] = result["error"].replace("（不影响连通判定）", "")
         return jsonify({"ok": True, **result})
 
     # ------------------------------------------------------------------
