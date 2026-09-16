@@ -6,7 +6,7 @@
 
 - **订阅模式**：ChatGPT 订阅（Codex 配额，原生登录态）、OpenCode Go 订阅（$10/月，含 Grok 4.6 / GPT 5.6 Luna / Muse Spark）
 - **国际大厂**：OpenAI 官方、Azure OpenAI、AWS Bedrock（Codex 内置 provider）
-- **国内直连**：DeepSeek 官方（deepseek-flash / v4-pro，官方为 Codex 适配 Responses）、Kimi 官方（kimi-k3，1M 上下文）、MiniMax 官方（MiniMax-M3）、阿里云百炼（通义 qwen3-coder-plus / DeepSeek-V4 / GLM-5.2，模型级清单）、火山方舟（豆包 doubao-seed-2.0）、智谱 GLM（Coding Plan /api/v1）、腾讯云 TokenHub（GLM/Kimi/DeepSeek/MiniMax 服务端自动转换）
+- **国内直连**：DeepSeek 官方（deepseek-flash / v4-pro，官方为 Codex 适配 Responses）、Kimi 官方（kimi-k3，1M 上下文）、MiniMax 官方（MiniMax-M3）、阿里云百炼（通义 qwen3.8-max / DeepSeek-V4 / GLM-5.3，模型级清单）、火山方舟（豆包 doubao-seed-2.x）、智谱 GLM（Coding Plan /api/v1）、腾讯云 TokenHub（GLM/Kimi/DeepSeek/MiniMax 服务端自动转换）
 - **聚合/网关**：OpenRouter、Vercel AI Gateway、Cloudflare AI Gateway、NovAI（国产模型网关）
 - **推理平台**：Groq、SambaNova（RDU）、Fireworks、DigitalOcean AI Platform、Nebius Token Factory、xAI Grok、Perplexity、Hugging Face Inference
 - **本地**：Ollama、LM Studio、通用 Responses 中转站

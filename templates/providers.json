@@ -17,11 +17,11 @@
     "kind": "custom",
     "provider_id": "openai-custom",
     "base_url": "https://api.openai.com/v1",
-    "default_model": "gpt-5.6",
-    "models": ["gpt-5.6", "gpt-5.4", "gpt-5.2", "gpt-5.6-sol", "gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.1", "gpt-4.1"],
+    "default_model": "gpt-5.6-sol",
+    "models": ["gpt-6-astra", "gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna", "gpt-5.6", "gpt-5.5", "gpt-5.5-pro", "gpt-5.4", "gpt-5.3-codex", "gpt-5.3-codex-spark", "gpt-5.2-codex", "gpt-5.2", "gpt-5.1-codex-max", "gpt-5.1", "gpt-4.1"],
     "default_env_key": "OPENAI_API_KEY",
     "query_params": null,
-    "notes": "OpenAI 官方 API（按 token 计费），需要官方 API key。注意：与 ChatGPT 订阅配额是两套计费，订阅用户请用上方「ChatGPT 订阅」卡片。"
+    "notes": "OpenAI 官方 API（按 token 计费）。gpt-6-astra 为最新旗舰，gpt-5.3-codex 为编程特化，gpt-5.6 裸 ID 是家族别名（推荐用 sol/terra/luna）。注意：与 ChatGPT 订阅配额是两套计费，订阅用户请用上方「ChatGPT 订阅」卡片。"
   },
   {
     "id": "opencode-go",
@@ -41,11 +41,11 @@
     "kind": "custom",
     "provider_id": "azure-openai",
     "base_url": null,
-    "default_model": "gpt-5.6",
-    "models": ["gpt-5.6", "gpt-5.4", "gpt-5.2", "gpt-4.1"],
+    "default_model": "gpt-5.6-sol",
+    "models": ["gpt-6-astra", "gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna", "gpt-5.5", "gpt-5.4", "gpt-5.4-pro", "gpt-5.4-mini", "gpt-5.3-codex", "gpt-5.2-codex", "gpt-5.2", "gpt-5.1-codex-max", "gpt-5.1", "gpt-4.1", "o4-mini"],
     "default_env_key": "AZURE_OPENAI_API_KEY",
     "query_params": {"api-version": "2025-06-01-preview"},
-    "notes": "填入你的 Azure 部署端点（形如 https://<resource>.openai.azure.com/openai/v1）。api-version 可在高级选项中修改。"
+    "notes": "填入你的 Azure 部署端点（形如 https://<resource>.openai.azure.com/openai/v1）。注意：Azure 没有裸 gpt-5.6（用 sol/terra/luna），gpt-oss 系列仅 Chat 不支持 Responses。api-version 可在高级选项中修改。"
   },
   {
     "id": "amazon-bedrock",
@@ -53,11 +53,11 @@
     "kind": "builtin",
     "provider_id": "amazon-bedrock",
     "base_url": null,
-    "default_model": "openai.gpt-5.5",
-    "models": ["openai.gpt-5.6-sol", "openai.gpt-5.6-terra", "openai.gpt-5.6-luna", "openai.gpt-5.5", "openai.gpt-5.4", "openai.gpt-oss-120b", "openai.gpt-oss-20b"],
+    "default_model": "openai.gpt-5.6-sol",
+    "models": ["openai.gpt-6-astra", "openai.gpt-5.6-sol", "openai.gpt-5.6-terra", "openai.gpt-5.6-luna", "openai.gpt-5.5", "openai.gpt-5.4", "openai.gpt-oss-120b", "openai.gpt-oss-20b"],
     "default_env_key": "AWS_BEARER_TOKEN_BEDROCK",
     "query_params": null,
-    "notes": "使用 Codex 内置 amazon-bedrock provider（Responses API，bedrock-mantle 端点）。认证：Bedrock API key（写入 AWS_BEARER_TOKEN_BEDROCK）或 AWS SDK 凭证链（需另设 AWS_REGION 等环境变量）。"
+    "notes": "使用 Codex 内置 amazon-bedrock provider（Responses API，bedrock-mantle 端点）。gpt-oss 必须走 bedrock-mantle 的 openai.gpt-oss-120b/20b；gpt-5.4/5.5 仅 mantle 支持 Responses。认证：Bedrock API key（写入 AWS_BEARER_TOKEN_BEDROCK）或 AWS SDK 凭证链（需另设 AWS_REGION 等环境变量）。"
   },
   {
     "id": "dashscope",
@@ -65,11 +65,11 @@
     "kind": "custom",
     "provider_id": "dashscope",
     "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-    "default_model": "qwen3-coder-plus",
-    "models": ["qwen3-coder-plus", "qwen3-coder-flash", "qwen3.8-max", "qwen3.7-max", "qwen3-max", "qwen3.7-plus", "qwen3.6-plus", "qwen3.5-plus", "qwen3.7-flash", "qwen3.6-flash", "qwen3.5-flash", "qwen-plus", "qwen-flash", "deepseek-v4-pro", "deepseek-v4-flash", "glm-5.2"],
+    "default_model": "qwen3.8-max",
+    "models": ["qwen3.8-max", "qwen3.8-max-0902", "qwen3.8-flash", "qwen3.7-max", "qwen3-max", "qwen3.7-plus", "qwen3.6-plus", "qwen3.5-plus", "qwen3.7-flash", "qwen3.6-flash", "qwen3.5-flash", "qwen3.8-27b", "deepseek-v4-pro", "deepseek-v4-flash", "deepseek-v4.1-flash", "glm-5.3", "glm-5.2", "kimi-k3"],
     "default_env_key": "DASHSCOPE_API_KEY",
     "query_params": null,
-    "notes": "阿里云百炼官方 OpenAI 兼容 Responses 接口（/compatible-mode/v1/responses）。仅上列模型支持 Responses。国际站新加坡: https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+    "notes": "阿里云百炼官方 OpenAI 兼容 Responses 接口（/compatible-mode/v1/responses）。注意：qwen3-coder-* 与 qwen-plus/flash 仅 Chat 协议、不在 Responses 支持清单内。国际站新加坡: https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
   },
   {
     "id": "volcengine-ark",
@@ -77,11 +77,11 @@
     "kind": "custom",
     "provider_id": "volcengine-ark",
     "base_url": "https://ark.cn-beijing.volces.com/api/v3",
-    "default_model": "doubao-seed-2.0-code",
-    "models": ["doubao-seed-2.0-code", "doubao-seed-2.0-pro", "doubao-seed-2.0-lite", "doubao-seed-2.0-mini", "doubao-seed-1-6-250615"],
+    "default_model": "doubao-seed-2-0-code-preview-260215",
+    "models": ["doubao-seed-2-1-pro-260915", "doubao-seed-2-0-code-preview-260215", "doubao-seed-2-0-pro-260215", "doubao-seed-2-0-lite-260428", "doubao-seed-2-0-mini-260428", "doubao-seed-1-8-251228", "ark-code-latest"],
     "default_env_key": "ARK_API_KEY",
     "query_params": null,
-    "notes": "火山引擎方舟官方 Responses API（/api/v3/responses），豆包 Seed 系列。支持 web_search / MCP 等内置工具。"
+    "notes": "火山引擎方舟官方 Responses API（/api/v3/responses），豆包 Seed 系列。API 需填完整版本 ID（如 doubao-seed-2-0-code-preview-260215），也可填控制台创建的自定义接入点 ID；支持 web_search / MCP 等内置工具。"
   },
   {
     "id": "zai",
@@ -90,10 +90,10 @@
     "provider_id": "zai",
     "base_url": "https://open.bigmodel.cn/api/v1",
     "default_model": "glm-5.3",
-    "models": ["glm-5.3", "glm-5-turbo", "glm-5.2", "glm-5.1", "glm-5"],
+    "models": ["glm-5.3", "glm-5.3-flash", "glm-5-turbo"],
     "default_env_key": "GLM_API_KEY",
     "query_params": null,
-    "notes": "智谱 GLM Coding Plan 官方 OpenAI Response 协议端点（需编程套餐 Key）。国际站: https://api.z.ai/api/v1。按量付费端点 /api/paas/v4 仅 Chat 协议、不支持 Codex。"
+    "notes": "智谱 GLM Coding Plan 官方 OpenAI Response 协议端点（需编程套餐 Key）。Responses 端点当前仅支持 glm-5.3 / glm-5.3-flash / glm-5-turbo；glm-5.2/5.1/5 仅 Chat。国际站: https://api.z.ai/api/v1。"
   },
   {
     "id": "deepseek",
@@ -114,11 +114,11 @@
     "provider_id": "kimi",
     "base_url": "https://api.moonshot.cn/v1",
     "default_model": "kimi-k3",
-    "models": ["kimi-k3", "kimi-k2.7-code", "kimi-k2.6"],
+    "models": ["kimi-k3"],
     "default_env_key": "KIMI_API_KEY",
     "query_params": null,
     "extra_config": {"model_context_window": 1048576},
-    "notes": "月之暗面 Kimi 官方直连，原生 Responses API（官方提供 Codex 接入指南）。kimi-k3 为 1M 上下文旗舰，已自动写入 model_context_window=1048576（官方推荐）；若改用 256K 的 k2.7-code / k2.6 可在 Provider 管理里删掉该键。"
+    "notes": "月之暗面 Kimi 官方直连，原生 Responses API（官方提供 Codex 接入指南）。Responses 端点当前仅支持 kimi-k3（1M 上下文），已自动写入官方推荐的 model_context_window=1048576；kimi-k2.7-code / kimi-k2.6 仅 Chat 协议。"
   },
   {
     "id": "minimax",
@@ -127,10 +127,10 @@
     "provider_id": "minimax",
     "base_url": "https://api.minimax.cn/v1",
     "default_model": "MiniMax-M3",
-    "models": ["MiniMax-M3", "MiniMax-M2.7", "MiniMax-M2.5"],
+    "models": ["MiniMax-M3", "MiniMax-M2.7", "MiniMax-M2.7-highspeed", "MiniMax-M2.5", "MiniMax-M2.5-highspeed", "MiniMax-M2.1"],
     "default_env_key": "MINIMAX_API_KEY",
     "query_params": null,
-    "notes": "MiniMax 官方直连，原生 Responses API（/v1/responses）。国际站: https://api.minimax.io/v1。"
+    "notes": "MiniMax 官方直连，原生 Responses API（/v1/responses，M2.x 系列兼容）。国际站: https://api.minimax.io/v1。"
   },
   {
     "id": "tokenhub",
@@ -138,11 +138,11 @@
     "kind": "custom",
     "provider_id": "tokenhub",
     "base_url": "https://tokenhub.tencentmaas.com/v1",
-    "default_model": "glm-5.2",
-    "models": ["glm-5.2", "glm-5.1", "kimi-k3", "kimi-k2.7-code", "kimi-k2.7-code-highspeed", "kimi-k2.6", "deepseek-v4-pro", "deepseek-v4-flash", "deepseek-v3.2", "minimax-m3", "hy3"],
+    "default_model": "glm-5.3",
+    "models": ["hy4-preview", "hy3", "deepseek-v4-pro", "deepseek-v4-flash", "deepseek/deepseek-v4-pro-0813", "deepseek/deepseek-v4-flash-0731", "deepseek/deepseek-flash", "glm-5.3", "glm-5.3-flash", "glm-5.2", "kimi-k3", "kimi-k2.6", "minimax-m3", "minimax-m2.7", "qwen3.5-plus", "qwen3.5-flash", "mimo-v2.5-pro"],
     "default_env_key": "TOKENHUB_API_KEY",
     "query_params": null,
-    "notes": "腾讯云官方大模型服务平台，统一提供 /v1/responses 接口，GLM/Kimi/DeepSeek/MiniMax 等国产模型由服务端自动协议转换（原厂直连不可用）。新加坡节点: https://tokenhub-intl.tencentmaas.com/v1"
+    "notes": "腾讯云官方大模型服务平台，统一提供 /v1/responses 接口，GLM/Kimi/DeepSeek/MiniMax 等国产模型由服务端自动协议转换。注意：kimi-k2.7-code、glm-5 等仅 Chat；deepseek-v3.2 已下架。新加坡节点: https://tokenhub-intl.tencentmaas.com/v1"
   },
   {
     "id": "openrouter",
@@ -150,11 +150,11 @@
     "kind": "custom",
     "provider_id": "openrouter",
     "base_url": "https://openrouter.ai/api/v1",
-    "default_model": "openai/gpt-5.6",
-    "models": ["openai/gpt-5.6", "openai/gpt-5.6-sol", "anthropic/claude-opus-4.6", "google/gemini-3.1-pro", "qwen/qwen3-max", "deepseek/deepseek-v3.2", "openai/o4-mini"],
+    "default_model": "openai/gpt-6-astra",
+    "models": ["openai/gpt-6-astra-pro", "openai/gpt-6-astra", "anthropic/claude-opus-5", "anthropic/claude-fable-5.1", "openai/gpt-5.6-sol", "openai/gpt-5.6-terra", "openai/gpt-5.6-luna", "openai/gpt-5.3-codex", "google/gemini-3.1-pro-preview", "x-ai/grok-4.6", "deepseek/deepseek-v4-pro", "qwen/qwen3.8-max-0902", "moonshotai/kimi-k3", "z-ai/glm-5.3", "minimax/minimax-m3", "openai/gpt-oss-120b"],
     "default_env_key": "OPENROUTER_API_KEY",
     "query_params": null,
-    "notes": "聚合平台（key 以 sk-or- 开头），模型 ID 用 provider/model 格式（如 openai/gpt-5.6）。官方支持 Responses API（对 Chat 模型自动转换）。"
+    "notes": "聚合平台（key 以 sk-or- 开头），模型 ID 用 provider/model 格式。官方支持 OpenAI Responses API（OpenAI 模型透传、其他模型自动转换，无状态）。旧 ID（openai/gpt-5.6、google/gemini-3.1-pro 等）已下架。"
   },
   {
     "id": "groq",
@@ -163,10 +163,10 @@
     "provider_id": "groq",
     "base_url": "https://api.groq.com/openai/v1",
     "default_model": "openai/gpt-oss-120b",
-    "models": ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "llama-3.3-70b-versatile", "llama-3.1-8b-instant", "qwen/qwen3.6-27b", "groq/compound", "groq/compound-mini", "minimaxai/minimax-m2.7"],
+    "models": ["openai/gpt-oss-120b", "openai/gpt-oss-20b", "openai/gpt-oss-safeguard-20b", "qwen/qwen3.8-27b", "qwen/qwen3.6-27b", "groq/compound", "groq/compound-mini", "llama-3.3-70b-versatile", "llama-3.1-8b-instant"],
     "default_env_key": "GROQ_API_KEY",
     "query_params": null,
-    "notes": "超快推理服务（key 以 gsk_ 开头）。官方确认全部模型支持 Responses API。"
+    "notes": "超快推理服务（key 以 gsk_ 开头）。Responses API 为 beta 阶段（官方桌面版已在用，仅无状态）；SDK 尚未收录该端点。"
   },
   {
     "id": "xai",
@@ -174,11 +174,11 @@
     "kind": "custom",
     "provider_id": "xai",
     "base_url": "https://api.x.ai/v1",
-    "default_model": "grok-4.5",
-    "models": ["grok-4.5", "grok-4.3", "grok-4.1-fast", "grok-4", "grok-code-fast-1"],
+    "default_model": "grok-4.6",
+    "models": ["grok-4.6", "grok-4.5", "grok-4.3", "grok-4.20-multi-agent-0309", "grok-4.20-0309-reasoning", "grok-4.20-0309-non-reasoning", "grok-build-0.1", "grok-4.20"],
     "default_env_key": "XAI_API_KEY",
     "query_params": null,
-    "notes": "Grok 系列模型（key 以 xai- 开头）。官方使用 Responses API 路径。"
+    "notes": "Grok 系列模型（key 以 xai- 开头），官方使用 Responses API 路径。注意：grok-4.1-fast / grok-4 / grok-code-fast-1 已于 2026-05 退役。"
   },
   {
     "id": "perplexity",
@@ -187,10 +187,10 @@
     "provider_id": "perplexity",
     "base_url": "https://api.perplexity.ai/v1",
     "default_model": "sonar-pro",
-    "models": ["sonar-pro", "sonar-reasoning-pro", "sonar"],
+    "models": ["sonar-pro", "sonar-reasoning-pro", "sonar-deep-research", "sonar"],
     "default_env_key": "PERPLEXITY_API_KEY",
     "query_params": null,
-    "notes": "Agent API 完全兼容 OpenAI Responses 协议（/v1/responses 是官方别名端点）。"
+    "notes": "Agent API 原生兼容 OpenAI Responses 协议（/v1/responses 为官方别名端点）。"
   },
   {
     "id": "huggingface",
@@ -198,11 +198,11 @@
     "kind": "custom",
     "provider_id": "huggingface",
     "base_url": "https://router.huggingface.co/v1",
-    "default_model": "openai/gpt-oss-120b",
-    "models": ["openai/gpt-oss-120b", "moonshotai/kimi-k2-instruct", "deepseek-ai/DeepSeek-R1", "qwen/qwen3-32b"],
+    "default_model": "moonshotai/Kimi-K3",
+    "models": ["moonshotai/Kimi-K3", "zai-org/GLM-5.3", "zai-org/GLM-5.3-Flash", "deepseek-ai/DeepSeek-V4.1-Flash", "deepseek-ai/DeepSeek-V4-Pro", "deepseek-ai/DeepSeek-V4-Flash-0731", "MiniMaxAI/MiniMax-M3", "Qwen/Qwen3.8-27B", "moonshotai/Kimi-K2.7-Code", "openai/gpt-oss-120b"],
     "default_env_key": "HF_TOKEN",
     "query_params": null,
-    "notes": "HF Inference Providers 路由。模型 ID 可加 :groq 等后缀指定后端（如 openai/gpt-oss-120b:groq）。官方支持 Responses API。"
+    "notes": "HF Inference Providers 路由，Responses API 为 beta（自动映射到各 provider 的 chat 模型）。模型 ID 可加 :fastest / :cheapest / :provider 后缀指定后端（如 openai/gpt-oss-120b:groq）。"
   },
   {
     "id": "fireworks",
@@ -210,11 +210,11 @@
     "kind": "custom",
     "provider_id": "fireworks",
     "base_url": "https://api.fireworks.ai/inference/v1",
-    "default_model": "accounts/fireworks/models/qwen3-235b-a22b",
-    "models": ["accounts/fireworks/models/qwen3-235b-a22b", "accounts/fireworks/models/llama4-maverick", "accounts/fireworks/models/qwen3-32b"],
+    "default_model": "accounts/fireworks/models/deepseek-v4-pro-0813",
+    "models": ["accounts/fireworks/models/deepseek-v4-pro-0813", "accounts/fireworks/models/kimi-k3", "accounts/fireworks/models/glm-5p3", "accounts/fireworks/models/qwen3p8-max", "accounts/fireworks/models/deepseek-v4p1-flash", "accounts/fireworks/models/kimi-k2p7-code", "accounts/fireworks/models/deepseek-v4-flash-0731", "accounts/fireworks/models/minimax-m3", "accounts/fireworks/models/glm-5p2", "accounts/fireworks/models/kimi-k2p6", "accounts/fireworks/models/glm-5p3-flash", "accounts/fireworks/models/gpt-oss-120b", "accounts/fireworks/models/nemotron-3-ultra-nvfp4"],
     "default_env_key": "FIREWORKS_API_KEY",
     "query_params": null,
-    "notes": "开源模型推理平台。官方完整支持 Responses API（含 MCP 工具、previous_response_id、流式）。模型 ID 形如 accounts/fireworks/models/<模型>。"
+    "notes": "开源模型推理平台。官方完整支持 Responses API（含 MCP 工具、previous_response_id、流式）。模型 ID 形如 accounts/fireworks/models/<模型>；旧 serverless ID（qwen3-235b-a22b、llama4-maverick 等）已下线。"
   },
   {
     "id": "digitalocean",
@@ -222,11 +222,11 @@
     "kind": "custom",
     "provider_id": "digitalocean",
     "base_url": "https://inference.do-ai.run/v1",
-    "default_model": "openai-gpt-oss-20b",
-    "models": ["openai-gpt-oss-20b", "openai-gpt-oss-120b"],
+    "default_model": "openai-gpt-6-astra",
+    "models": ["openai-gpt-6-astra", "openai-gpt-5.5", "openai-gpt-5.4", "openai-gpt-5.4-mini", "qwen3.8-max", "deepseek-v4-pro-0813", "deepseek-v4.1-flash", "deepseek-v4-flash-0731", "kimi-k2.6", "minimax-m2.5", "glm-5.3", "glm-5.3-flash", "mimo-v2.5-pro"],
     "default_env_key": "DIGITALOCEAN_TOKEN",
     "query_params": null,
-    "notes": "DigitalOcean Serverless Inference 官方 /v1/responses 端点。模型 ID 用 DO 前缀格式（如 openai-gpt-oss-20b），完整清单见其 available models 页面。"
+    "notes": "DigitalOcean Serverless Inference 官方 /v1/responses 端点。模型 ID 用 DO 前缀格式（如 openai-gpt-oss-20b）。注意：gpt-oss、kimi-k3、gpt-5.6 系仅 Chat，未列入。"
   },
   {
     "id": "sambanova",
@@ -235,10 +235,10 @@
     "provider_id": "sambanova",
     "base_url": "https://api.sambanova.ai/v1",
     "default_model": "gpt-oss-120b",
-    "models": ["gpt-oss-120b", "MiniMax-M2.7", "MiniMax-M2.5", "DeepSeek-V3.1"],
+    "models": ["gpt-oss-120b", "MiniMax-M2.7"],
     "default_env_key": "SAMBANOVA_API_KEY",
     "query_params": null,
-    "notes": "RDU 架构超快推理。官方支持 /v1/responses（无状态，不支持 previous_response_id 与服务端内置工具），官方博客提供 Codex 直连配置示例。"
+    "notes": "RDU 架构超快推理。官方仅 gpt-oss-120b 与 MiniMax-M2.7 支持 /v1/responses（无状态，不支持 previous_response_id 与服务端内置工具），官方博客提供 Codex 直连配置示例；其余模型仅 Chat。"
   },
   {
     "id": "nebius",
@@ -246,11 +246,11 @@
     "kind": "custom",
     "provider_id": "nebius",
     "base_url": "https://api.tokenfactory.nebius.com/v1",
-    "default_model": "moonshotai/Kimi-K2.5",
-    "models": ["moonshotai/Kimi-K2.5", "nebius/NousResearch/Hermes-4-405B", "meta-llama/Llama-3.3-70B-Instruct"],
+    "default_model": "deepseek-ai/DeepSeek-V4-Pro-0813",
+    "models": ["deepseek-ai/DeepSeek-V4-Pro-0813", "moonshotai/Kimi-K3", "zai-org/GLM-5.3", "Qwen/Qwen3.5-397B-A17B", "deepseek-ai/DeepSeek-V4-Pro", "MiniMaxAI/MiniMax-M3", "moonshotai/Kimi-K2.7-Code", "moonshotai/Kimi-K2.6", "nvidia/Nemotron-3-Ultra-550b-a55b", "nvidia/nemotron-3-super-120b-a12b", "zai-org/GLM-5.2", "zai-org/GLM-5.3-Flash", "deepseek-ai/DeepSeek-V4-Flash-0731", "openai/gpt-oss-120b", "NousResearch/Hermes-4-405B"],
     "default_env_key": "NEBIUS_API_KEY",
     "query_params": null,
-    "notes": "Nebius Token Factory 官方 /v1/responses（OpenAI 兼容）。模型 ID 为 厂商/模型 格式，可用 GET /v1/models 查询完整清单。"
+    "notes": "Nebius Token Factory 官方 /v1/responses（OpenAI 兼容）。模型 ID 为 厂商/模型 格式（Hermes 无 nebius/ 前缀）；旧 ID（Kimi-K2.5、Llama-3.3、MiniMax-M2.5）已于 2026-08 下线。"
   },
   {
     "id": "vercel",
@@ -258,11 +258,11 @@
     "kind": "custom",
     "provider_id": "vercel",
     "base_url": "https://ai-gateway.vercel.sh/v1",
-    "default_model": "openai/gpt-5.6-sol",
-    "models": ["openai/gpt-5.6-sol", "openai/gpt-5.4", "anthropic/claude-opus-5", "anthropic/claude-sonnet-5"],
+    "default_model": "openai/gpt-6-astra",
+    "models": ["openai/gpt-6-astra", "openai/gpt-6-astra-fast", "anthropic/claude-opus-5", "anthropic/claude-fable-5.1", "openai/gpt-5.6-sol", "openai/gpt-5.6-terra", "openai/gpt-5.6-luna", "openai/gpt-5.3-codex", "openai/gpt-5.5-pro", "google/gemini-3.8-flash", "spacexai/grok-4.6", "deepseek/deepseek-v4-pro", "alibaba/qwen3.8-max", "moonshotai/kimi-k3", "zai/glm-5.3", "anthropic/claude-sonnet-5"],
     "default_env_key": "AI_GATEWAY_API_KEY",
     "query_params": null,
-    "notes": "Vercel AI Gateway 官方 OpenAI Responses API。模型 ID 用 provider/model 格式，可路由 OpenAI/Anthropic/Google 等。"
+    "notes": "Vercel AI Gateway 官方 OpenAI Responses API（/v1/responses）。模型 ID 用 provider/model 格式；注意 Grok 前缀已由 x-ai/ 改为 spacexai/。"
   },
   {
     "id": "cloudflare",
@@ -270,11 +270,11 @@
     "kind": "custom",
     "provider_id": "cloudflare",
     "base_url": null,
-    "default_model": "openai/gpt-4.1",
-    "models": ["openai/gpt-4.1", "@cf/openai/gpt-oss-120b"],
+    "default_model": "openai/gpt-5.6-sol",
+    "models": ["openai/gpt-5.6-sol", "anthropic/claude-opus-5", "google/gemini-3.8-flash", "deepseek/deepseek-v4-pro", "@cf/openai/gpt-oss-120b", "@cf/openai/gpt-oss-20b", "@cf/deepseek-ai/deepseek-v4-pro-0813", "@cf/zai-org/glm-5.3", "@cf/zai-org/glm-5.3-flash", "@cf/moonshotai/kimi-k2.7-code", "@cf/qwen/qwen3.8-27b"],
     "default_env_key": "CLOUDFLARE_API_TOKEN",
     "query_params": null,
-    "notes": "Cloudflare AI Gateway /ai/v1/responses 端点。Base URL 需填 https://api.cloudflare.com/client/v4/accounts/<你的账户ID>/ai/v1；第三方模型用 provider/model 格式，Workers AI 模型用 @cf/ 前缀（仅 GPT-OSS 等部分支持 Responses）。"
+    "notes": "Cloudflare AI Gateway /ai/v1/responses 端点。Base URL 需填 https://api.cloudflare.com/client/v4/accounts/<你的账户ID>/ai/v1；第三方模型用 provider/model 格式（走 Responses 透传），Workers AI 的 @cf/ 模型仅 Chat Completions、可能不适用于 Codex。"
   },
   {
     "id": "novai",
@@ -282,11 +282,11 @@
     "kind": "custom",
     "provider_id": "novai",
     "base_url": "https://aiapi-pro.com/v1",
-    "default_model": "deepseek-v3.2",
-    "models": ["deepseek-v3.2", "glm-5", "qwen-max", "qwen-plus", "minimax-text-01", "glm-4.6v"],
+    "default_model": "deepseek-v4-pro",
+    "models": ["glm-5.3", "glm-5.3-flash", "kimi-k3", "kimi-k2.8-preview", "deepseek-v4-pro", "deepseek-v4-flash", "deepseek-v4.1-flash", "qwen3.8-max", "qwen3-coder-plus", "qwen3-coder-flash", "doubao-seed-2.1-pro", "doubao-seed-2.0-code", "mimo-v2.5-pro", "minimax-m3", "hy4-preview", "glm-5.2"],
     "default_env_key": "NOVAI_API_KEY",
     "query_params": null,
-    "notes": "第三方聚合网关，为 GLM/DeepSeek/Qwen/MiniMax 等中文模型提供 /v1/responses 端点（自动转换）。第三方平台，请自行评估可靠性。"
+    "notes": "第三方聚合网关，为 GLM/DeepSeek/Qwen/MiniMax 等中文模型提供 /v1/responses 端点（自动转换）。注意：deepseek-v3.2 已下架。第三方平台，请自行评估可靠性。"
   },
   {
     "id": "ollama",
@@ -295,10 +295,10 @@
     "oss_id": "ollama",
     "base_url": "http://localhost:11434/v1",
     "default_model": "qwen3-coder:32b",
-    "models": ["qwen3-coder:32b", "qwen3-coder:14b", "llama3.3", "deepseek-r1"],
+    "models": ["qwen3-coder:32b", "qwen3-coder:14b", "gpt-oss:20b", "gpt-oss:120b", "llama3.3", "deepseek-r1"],
     "default_env_key": null,
     "query_params": null,
-    "notes": "本地 Ollama 服务。无需 API key；请先启动 ollama serve 并拉取模型。"
+    "notes": "本地 Ollama 服务。无需 API key；请先启动 ollama serve 并拉取模型（列表仅为常见示例，实际以你本地已拉取的模型为准）。"
   },
   {
     "id": "lmstudio",
@@ -310,7 +310,7 @@
     "models": ["local-model"],
     "default_env_key": null,
     "query_params": null,
-    "notes": "本地 LM Studio 服务。无需 API key；请先在 LM Studio 中加载模型并启动本地服务器。"
+    "notes": "本地 LM Studio 服务。无需 API key；请先在 LM Studio 中加载模型并启动本地服务器（模型 ID 以 LM Studio 加载的为准）。"
   },
   {
     "id": "generic-responses",
@@ -319,7 +319,7 @@
     "provider_id": "generic-responses",
     "base_url": null,
     "default_model": "gpt-5.6",
-    "models": ["gpt-5.6", "gpt-5.4", "gpt-4.1", "gpt-4o"],
+    "models": ["gpt-5.6", "gpt-5.6-sol", "gpt-5.4", "gpt-4.1", "gpt-4o"],
     "default_env_key": "RESPONSES_API_KEY",
     "query_params": null,
     "notes": "任意兼容 OpenAI Responses 协议的中转站地址（需支持 /v1/responses 与 /v1/models）。"
