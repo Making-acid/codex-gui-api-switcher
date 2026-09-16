@@ -30,7 +30,7 @@
     <div class="guide">
       <p>这里是主要入口：选供应商卡片 → 选模型 → 填 API key → 点「应用」。切换前会自动备份，随时可回退。</p>
       <p>「ChatGPT 订阅」= 用你的 ChatGPT 账号登录（Plus/Pro 订阅配额），是 Codex 原生默认模式；其余卡片 = 第三方/API 计费模式。</p>
-      <p>模型下拉只收录该平台 <b>Codex 兼容（Responses 协议）</b>的模型，所以部分卡片数量较少（如 Kimi 仅 kimi-k3）；填好 Key 后点「拉取模型」可获取平台完整清单（含仅支持 Chat 的模型，Codex 用不了）。</p>
+      <p>模型可以直接<b>手动输入任意 ID</b>；下拉列出平台全量模型——能用的排在前面，带「仅 Chat」标注的 Codex 无法使用。填好 Key 后点「拉取模型」还能获取平台实时清单。</p>
     </div>
     <div class="actions quick-actions">
       <button id="qa-baseline" class="danger">重置为 Codex 原始状态</button>
@@ -43,7 +43,7 @@
       <h3 id="quick-form-title"></h3>
       <div class="form-row">
         <label>模型</label>
-        <input id="qf-model" list="qf-models" placeholder="模型 ID">
+        <input id="qf-model" list="qf-models" placeholder="模型 ID（可直接手动输入）">
         <datalist id="qf-models"></datalist>
         <button type="button" class="ghost" id="qf-models-refresh">拉取模型</button>
         <span id="qf-models-status" class="hint"></span>
@@ -299,6 +299,6 @@
 </div>
 
 <div id="toast" class="toast hidden"></div>
-<script src="app.js?v=1.1.4"></script>
+<script src="app.js?v=1.1.5"></script>
 </body>
 </html>

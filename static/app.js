@@ -171,9 +171,17 @@ function selectTemplate(t) {
     $("#qf-apply").className = "primary";
     const datalist = $("#qf-models");
     datalist.innerHTML = "";
+    const chatOnly = t.models_chat_only || [];
     (t.models || []).forEach((m) => {
       const opt = document.createElement("option");
       opt.value = m;
+      datalist.appendChild(opt);
+    });
+    chatOnly.forEach((m) => {
+      if ((t.models || []).includes(m)) return;
+      const opt = document.createElement("option");
+      opt.value = m;
+      opt.label = `${m}（仅 Chat，Codex 不可用）`;
       datalist.appendChild(opt);
     });
     $("#qf-model").value = t.default_model || "";
@@ -188,9 +196,14 @@ function selectTemplate(t) {
     $("#qf-key").value = "";
     $("#qf-scope-row").classList.toggle("hidden", t.kind === "oss");
 
-    setText($id("qf-models-status"), t.models && t.models.length
-      ? `内置 ${t.models.length} 个 Codex 兼容（Responses）模型`
-      : "");
+    const chatCount = chatOnly.length;
+    if (t.models && t.models.length) {
+      let status = `可用 ${t.models.length} 个 Responses 模型，也可直接手动输入模型 ID`;
+      if (chatCount) status += `；下拉另含 ${chatCount} 个仅 Chat 模型（已标注不可用）`;
+      setText($id("qf-models-status"), status);
+    } else {
+      setText($id("qf-models-status"), "可直接手动输入模型 ID");
+    }
     const keyReady = t.kind === "oss" || !!$("#qf-key").value.trim();
     if (t.base_url && keyReady) refreshQfModels({ silent: true });
   }
@@ -267,6 +280,13 @@ $("#qf-apply").addEventListener("click", async () => {
   const btn = $("#qf-apply");
   btn.disabled = true;
   try {
+    const chosen = $("#qf-model").value.trim();
+    if (chosen && (t.models_chat_only || []).includes(chosen)) {
+      const go = await modalConfirm("该模型 Codex 可能无法使用",
+        `<p><b>${esc(chosen)}</b> 在该平台仅提供 Chat Completions 协议，而 Codex 需要 Responses 协议，应用后请求很可能失败。</p><p>仍要应用吗？</p>`,
+        "仍要应用");
+      if (!go) return;
+    }
     const payload = {
       template_id: t.id,
       model: $("#qf-model").value || t.default_model || null,

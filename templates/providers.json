@@ -31,6 +31,7 @@
     "base_url": "https://opencode.ai/zen/go/v1",
     "default_model": "grok-4.6",
     "models": ["grok-4.6", "gpt-5.6-luna", "muse-spark-1.2-contributor"],
+    "models_chat_only": ["glm-5.3-flash", "glm-5.3", "glm-5.2", "glm-5.1", "kimi-k3", "kimi-k2.7-code", "kimi-k2.6", "longcat-2.0", "deepseek-v4-pro", "deepseek-v4-flash", "deepseek-v4-flash-vision-exp", "mimo-v2.5", "mimo-v2.5-pro", "minimax-m3", "minimax-m2.7", "minimax-m2.5", "qwen3.8-max", "qwen3.7-max", "qwen3.7-plus", "qwen3.6-plus", "hy3", "ox-alpha-free"],
     "default_env_key": "OPENCODE_GO_API_KEY",
     "query_params": null,
     "notes": "OpenCode Zen 的 $10/月订阅，含多款开源编程模型（Grok 4.6 / GPT 5.6 Luna / Muse Spark 等）。在 opencode.ai 登录 Zen 订阅 Go 后复制 API key。仅列了走 /v1/responses 的模型（Codex 只支持 Responses 协议）。"
@@ -67,6 +68,7 @@
     "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
     "default_model": "qwen3.8-max",
     "models": ["qwen3.8-max", "qwen3.8-max-0902", "qwen3.8-flash", "qwen3.7-max", "qwen3-max", "qwen3.7-plus", "qwen3.6-plus", "qwen3.5-plus", "qwen3.7-flash", "qwen3.6-flash", "qwen3.5-flash", "qwen3.8-27b", "deepseek-v4-pro", "deepseek-v4-flash", "deepseek-v4.1-flash", "glm-5.3", "glm-5.2", "kimi-k3"],
+    "models_chat_only": ["qwen3-coder-plus", "qwen3-coder-flash", "qwen-plus", "qwen-flash", "qwen3.6-max-preview", "qwen-long"],
     "default_env_key": "DASHSCOPE_API_KEY",
     "query_params": null,
     "notes": "阿里云百炼官方 OpenAI 兼容 Responses 接口（/compatible-mode/v1/responses）。注意：qwen3-coder-* 与 qwen-plus/flash 仅 Chat 协议、不在 Responses 支持清单内。国际站新加坡: https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
@@ -91,6 +93,7 @@
     "base_url": "https://open.bigmodel.cn/api/v1",
     "default_model": "glm-5.3",
     "models": ["glm-5.3", "glm-5.3-flash", "glm-5-turbo"],
+    "models_chat_only": ["glm-5.2", "glm-5.1", "glm-5", "glm-5v-turbo"],
     "default_env_key": "GLM_API_KEY",
     "query_params": null,
     "notes": "智谱 GLM Coding Plan 官方 OpenAI Response 协议端点（需编程套餐 Key）。Responses 端点当前仅支持 glm-5.3 / glm-5.3-flash / glm-5-turbo；glm-5.2/5.1/5 仅 Chat。国际站: https://api.z.ai/api/v1。"
@@ -115,6 +118,7 @@
     "base_url": "https://api.moonshot.cn/v1",
     "default_model": "kimi-k3",
     "models": ["kimi-k3"],
+    "models_chat_only": ["kimi-k2.7-code", "kimi-k2.7-code-highspeed", "kimi-k2.6"],
     "default_env_key": "KIMI_API_KEY",
     "query_params": null,
     "extra_config": {"model_context_window": 1048576},
@@ -140,6 +144,7 @@
     "base_url": "https://tokenhub.tencentmaas.com/v1",
     "default_model": "glm-5.3",
     "models": ["hy4-preview", "hy3", "deepseek-v4-pro", "deepseek-v4-flash", "deepseek/deepseek-v4-pro-0813", "deepseek/deepseek-v4-flash-0731", "deepseek/deepseek-flash", "glm-5.3", "glm-5.3-flash", "glm-5.2", "kimi-k3", "kimi-k2.6", "minimax-m3", "minimax-m2.7", "qwen3.5-plus", "qwen3.5-flash", "mimo-v2.5-pro"],
+    "models_chat_only": ["kimi-k2.7-code", "kimi-k2.7-code-highspeed", "kimi-k2.8-preview", "glm-5", "glm-5-turbo", "glm-5v-turbo", "hy-role", "hunyuan-role-latest", "hy-mt2-pro", "hy-mt2-plus", "hy-mt2-lite"],
     "default_env_key": "TOKENHUB_API_KEY",
     "query_params": null,
     "notes": "腾讯云官方大模型服务平台，统一提供 /v1/responses 接口，GLM/Kimi/DeepSeek/MiniMax 等国产模型由服务端自动协议转换。注意：kimi-k2.7-code、glm-5 等仅 Chat；deepseek-v3.2 已下架。新加坡节点: https://tokenhub-intl.tencentmaas.com/v1"
@@ -236,6 +241,7 @@
     "base_url": "https://api.sambanova.ai/v1",
     "default_model": "gpt-oss-120b",
     "models": ["gpt-oss-120b", "MiniMax-M2.7"],
+    "models_chat_only": ["MiniMax-M3", "DeepSeek-V3.2", "DeepSeek-V3.1", "Meta-Llama-3.3-70B-Instruct", "gemma-4-31B-it"],
     "default_env_key": "SAMBANOVA_API_KEY",
     "query_params": null,
     "notes": "RDU 架构超快推理。官方仅 gpt-oss-120b 与 MiniMax-M2.7 支持 /v1/responses（无状态，不支持 previous_response_id 与服务端内置工具），官方博客提供 Codex 直连配置示例；其余模型仅 Chat。"

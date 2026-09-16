@@ -31,6 +31,15 @@ class TemplateLibraryTest(unittest.TestCase):
                          "minimax", "dashscope", "volcengine-ark", "zai", "xai"):
             self.assertIn(expected, seen, f"缺少模板: {expected}")
 
+    def test_chat_only_lists_disjoint(self):
+        for t in load_templates():
+            models = set(t.get("models") or [])
+            chat = set(t.get("models_chat_only") or [])
+            self.assertFalse(models & chat, f"{t['id']} 的 models 与 models_chat_only 有重复")
+            for m in chat:
+                self.assertIsInstance(m, str)
+                self.assertTrue(m)
+
     def test_deepseek_direct_config(self):
         built = build_apply_config("deepseek")
         self.assertEqual(built["env_key"], "DEEPSEEK_API_KEY")
