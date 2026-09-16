@@ -4,6 +4,19 @@
 
 const AUTH_TOKEN = new URLSearchParams(location.search).get("token") || "";
 
+// 前端构建版本：取自 index.html 中 app.js?v=xxx 的版本参数，用于确认页面是否为新版
+const UI_VERSION = (() => {
+  try {
+    const s = [...document.querySelectorAll("script[src]")].find((x) => /app\.js/.test(x.src));
+    const m = s && s.src.match(/[?&]v=([\w.]+)/);
+    return m ? m[1] : "dev";
+  } catch (_) {
+    return "?";
+  }
+})();
+// 标签页标题带版本号：一眼识别是否为最新页面（旧标签页不会更新）
+document.title = `Codex API Manager v${UI_VERSION}`;
+
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
 const $id = (id) => document.getElementById(id);
@@ -100,7 +113,7 @@ function renderStatus() {
   const tcount = STATE.status ? `${STATE.status.template_count} 模板` : "";
   const active = c.model_provider || (c.openai_base_url ? "openai (openai_base_url)" : "未设置");
   setText($id("status-config"),
-    `${ver} · ${tcount} ｜ config: ${c.path}${c.exists ? "" : "（不存在）"} ｜ 当前: ${active} ｜ 模型: ${c.model || "未设置"}`);
+    `${ver} · ${tcount} · UI ${UI_VERSION} ｜ config: ${c.path}${c.exists ? "" : "（不存在）"} ｜ 当前: ${active} ｜ 模型: ${c.model || "未设置"}`);
 }
 
 /* ---------------- Tab 切换 ---------------- */
